@@ -7,8 +7,6 @@ import { Range } from "../../components";
 const BarChart = ({
   data,
   title = "Population by Country",
-  width = 900,
-  height = 500,
   years = { min: 1950, max: 2020 },
   defaultYear = 2020,
   colorByRegion = false,
@@ -51,6 +49,39 @@ const BarChart = ({
   const [defaultData, setDefaultData] = useState([]);
 
   const chartRef = useRef(null);
+  const [chartDimensions, setChartDimensions] = useState({
+    width: 0,
+    height: 0,
+  });
+
+  // Update chart dimensions on window resize
+  useEffect(() => {
+    const updateDimensions = () => {
+      if (chartContainerRef.current) {
+        const containerWidth = chartContainerRef.current.clientWidth;
+        setChartDimensions({
+          width: containerWidth * 0.9, // 90% of container width
+          height: Math.min(Math.max(containerWidth * 0.6, 300), 600), // Responsive height between 300-600px
+        });
+      }
+    };
+
+    // Initial calculation
+    updateDimensions();
+
+    // Add resize listener
+    window.addEventListener("resize", updateDimensions);
+
+    // Cleanup
+    return () => window.removeEventListener("resize", updateDimensions);
+  }, [chartContainerRef, isFullscreen]);
+
+  // Chart margins and dimensions
+  const margins = { top: 20, right: 120, bottom: 50, left: 120 };
+  const width = chartDimensions.width || 800;
+  const height = chartDimensions.height || 500;
+  const innerWidth = width - margins.left - margins.right;
+  const innerHeight = height - margins.top - margins.bottom;
 
   // Filtering and sorting data
   const filteredData = React.useMemo(() => {
@@ -92,11 +123,6 @@ const BarChart = ({
     searchTerm,
     showOnlySelected,
   ]);
-
-  // Dimensions and scales
-  const margins = { top: 20, right: 30, bottom: 40, left: 120 };
-  const innerWidth = width - margins.left - margins.right;
-  const innerHeight = height - margins.top - margins.bottom;
 
   // Create scales
   const yScale = d3
@@ -328,6 +354,28 @@ const BarChart = ({
     };
   }, []);
 
+  // Update chart dimensions on window resize
+  useEffect(() => {
+    const updateDimensions = () => {
+      if (chartContainerRef.current) {
+        const containerWidth = chartContainerRef.current.clientWidth;
+        setChartDimensions({
+          width: containerWidth * 0.9, // 90% of container width
+          height: Math.min(Math.max(containerWidth * 0.6, 300), 600), // Responsive height between 300-600px
+        });
+      }
+    };
+
+    // Initial calculation
+    updateDimensions();
+
+    // Add resize listener
+    window.addEventListener("resize", updateDimensions);
+
+    // Cleanup
+    return () => window.removeEventListener("resize", updateDimensions);
+  }, [chartContainerRef, isFullscreen]);
+
   return (
     <div className="relative">
       {/* Hidden chart for export */}
@@ -422,7 +470,9 @@ const BarChart = ({
       {/* Main chart container */}
       <div
         ref={chartContainerRef}
-        className="bg-white px-3 my-10 mx-auto w-[1000px] rounded-md relative"
+        className={`bg-white px-3 my-5 mx-auto w-full max-w-screen-xl rounded-md relative ${
+          isFullscreen ? "h-full" : ""
+        }`}
       >
         {/* Download Modal */}
         {isModalOpen && (
@@ -633,7 +683,7 @@ const BarChart = ({
 
         <div className="mx-auto w-[90%] h-full py-5">
           {/* Controls bar */}
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-1.5">
               <div className="text-sm flex items-center justify-center w-fit p-1 gap-1 cursor-pointer">
                 <TableCellsMerge className="h-4 w-4" />

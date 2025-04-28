@@ -1,6 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Home } from "./pages";
-import { WorldPopulation } from "./charts";
+import { AfricasSolarSurge, WorldPopulation } from "./charts";
 import AppTest from "./charts/bar/AppTest";
 
 const App = () => {
@@ -10,6 +10,7 @@ const App = () => {
         <Route path="/" element={<Home />}></Route>
         <Route path="worldPopulation" element={<WorldPopulation />}></Route>
         <Route path="worldPopulationNew" element={<AppTest />}></Route>
+        <Route path="solarSurgeAfrica" element={<AfricasSolarSurge />}></Route>
       </Routes>
     </BrowserRouter>
   );
