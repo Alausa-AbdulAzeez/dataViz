@@ -47,6 +47,7 @@ const BarChart = ({
   const [dataCardInfo, setDataCardInfo] = useState(null);
   const [isSharingModalOpen, setIsSharingModalOpen] = useState(false);
   const [defaultData, setDefaultData] = useState([]);
+  const [screenSize, setScreenSize] = useState("large");
 
   const chartRef = useRef(null);
   const [chartDimensions, setChartDimensions] = useState({
@@ -56,28 +57,39 @@ const BarChart = ({
 
   // Update chart dimensions on window resize
   useEffect(() => {
-    const updateDimensions = () => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      if (width < 640) {
+        setScreenSize("small");
+      } else if (width < 1024) {
+        setScreenSize("medium");
+      } else {
+        setScreenSize("large");
+      }
+
       if (chartContainerRef.current) {
         const containerWidth = chartContainerRef.current.clientWidth;
         setChartDimensions({
           width: containerWidth * 0.9, // 90% of container width
-          height: Math.min(Math.max(containerWidth * 0.6, 300), 600), // Responsive height between 300-600px
+          height: Math.min(Math.max(containerWidth * 0.6, 300), 600), // between 300–600px
         });
       }
     };
 
-    // Initial calculation
-    updateDimensions();
+    // Initial call
+    handleResize();
 
-    // Add resize listener
-    window.addEventListener("resize", updateDimensions);
+    // Add listener
+    window.addEventListener("resize", handleResize);
 
     // Cleanup
-    return () => window.removeEventListener("resize", updateDimensions);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
   }, [chartContainerRef, isFullscreen]);
 
   // Chart margins and dimensions
-  const margins = { top: 20, right: 120, bottom: 50, left: 120 };
+  const margins = { top: 20, right: 80, bottom: 20, left: 120 };
   const width = chartDimensions.width || 800;
   const height = chartDimensions.height || 500;
   const innerWidth = width - margins.left - margins.right;
@@ -377,7 +389,7 @@ const BarChart = ({
   }, [chartContainerRef, isFullscreen]);
 
   return (
-    <div className="relative">
+    <div className="relative w-full min-h-fit h-auto">
       {/* Hidden chart for export */}
       <div ref={chartRef} className="fixed -top-[200%]">
         <div className="px-3 my-10 mx-auto w-[1000px] rounded-md relative">
@@ -470,7 +482,7 @@ const BarChart = ({
       {/* Main chart container */}
       <div
         ref={chartContainerRef}
-        className={`bg-white px-3 my-5 mx-auto w-full max-w-screen-xl rounded-md relative ${
+        className={`bg-white flex justify-center px-3 my-5 mx-auto w-full max-w-screen-xl rounded-md relative ${
           isFullscreen ? "h-full" : ""
         }`}
       >
@@ -560,7 +572,7 @@ const BarChart = ({
                     <div className="font-medium text-lg">
                       Complete Dataset (CSV)
                     </div>
-                    <div className="text-sm">
+                    <div className="text-sm text-center">
                       Download all years of population data
                     </div>
                   </div>
@@ -681,7 +693,7 @@ const BarChart = ({
           </div>
         )}
 
-        <div className="mx-auto w-[90%] h-full py-5">
+        <div className="mx-auto w-full md:w-[90%] h-full py-5">
           {/* Controls bar */}
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-1.5">
@@ -714,9 +726,9 @@ const BarChart = ({
               )}
             </div>
           </div>
-
+          {console.log(screenSize)}
           {/* Compare mode toggle */}
-          {enableCompareMode && (
+          {enableCompareMode && screenSize !== "small" && (
             <div className="mb-4 flex items-center">
               <div className="mr-2 text-sm">Compare with year:</div>
               <select
@@ -763,7 +775,10 @@ const BarChart = ({
               ))}
               <button
                 className="text-xs text-gray-600 underline ml-2"
-                onClick={() => setSelectedCountries([])}
+                onClick={() => {
+                  setShowOnlySelected(false);
+                  setSelectedCountries([]);
+                }}
               >
                 Clear all
               </button>
@@ -771,7 +786,7 @@ const BarChart = ({
           )}
 
           {/* Zoom controls */}
-          <div className="mb-4 flex items-center gap-2">
+          {/* <div className="mb-4 flex items-center gap-2">
             <span className="text-sm">Zoom:</span>
             <button
               className={`text-xs py-1 px-2 rounded ${
@@ -813,10 +828,10 @@ const BarChart = ({
             >
               Top 10%
             </button>
-          </div>
+          </div> */}
 
           {/* Chart header */}
-          <div className="mb-3 flex justify-between">
+          <div className="mb-3 flex flex-wrap justify-between items-center gap-2">
             <div className="text-lg font-semibold">
               {title}, {currentYear}
               {compareYear && ` vs ${compareYear}`}
@@ -1082,7 +1097,7 @@ const BarChart = ({
           )}
 
           {/* Chart footer */}
-          <div className="mt-4 flex items-center justify-between">
+          <div className="mt-4 flex flex-wrap  items-center justify-between gap-4">
             {/* LHS - Data source */}
             <div className="">
               <div className="text-xs font-semibold">
@@ -1113,7 +1128,7 @@ const BarChart = ({
                     content: ``,
                   });
                 }}
-                className="relative rounded-sm hover:bg-gray-300 p-1.5 bg-gray-200 flex items-center justify-center cursor-pointer"
+                className="relative w-fit rounded-sm hover:bg-gray-300 p-1.5 bg-gray-200 flex items-center justify-center cursor-pointer"
               >
                 {iconTooltip?.visible &&
                   (iconTooltip?.content === "Fullscreen" ||

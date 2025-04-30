@@ -33,7 +33,7 @@ const Range = ({
 
   // Calculate percentage for slider progress
   const calculatePercentage = (val) => {
-    return ((val - min) / (max - min)) * 100;
+    return ((val - min) / (max - min)) * 100 - 1;
   };
 
   // Calculate position for threshold values
@@ -57,7 +57,7 @@ const Range = ({
   };
 
   return (
-    <div className={`w-full ${className} relative`}>
+    <div className={`w-full  ${className} relative`}>
       {/* Current Value Display - Above */}
       {showCurrentValue && currentValuePosition === "above" && (
         <div className="absolute -top-10 text-center" style={currentValueStyle}>

@@ -286,7 +286,7 @@ const AppTest = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 overflow-x-hidden w-full">
         <h1 className="text-2xl font-bold mb-6">World Population Data</h1>
 
         <BarChart
