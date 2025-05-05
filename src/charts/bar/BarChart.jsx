@@ -726,7 +726,6 @@ const BarChart = ({
               )}
             </div>
           </div>
-          {console.log(screenSize)}
           {/* Compare mode toggle */}
           {enableCompareMode && screenSize !== "small" && (
             <div className="mb-4 flex items-center">

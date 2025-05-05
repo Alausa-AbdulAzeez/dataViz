@@ -5,7 +5,7 @@ import { Icon } from "@iconify/react";
 
 const AfricasSolarSurge = () => {
   const defaultYear = 2020;
-  const years = { min: 2000, max: 2022 };
+  const years = { min: 1950, max: 2023 };
   const colorByRegion = false;
   const enableSharing = true;
 
@@ -30,11 +30,9 @@ const AfricasSolarSurge = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hoveredCountry, setHoveredCountry] = useState(null);
-  const [isDataCardVisible, setIsDataCardVisible] = useState(false);
 
   const [enableCompareMode, setEnableCompareMode] = useState(false);
   const [defaultData, setDefaultData] = useState([]);
-  const [dataCardInfo, setDataCardInfo] = useState(null);
 
   const [screenSize, setScreenSize] = useState("large");
   const [data, setData] = useState(null);
@@ -53,9 +51,9 @@ const AfricasSolarSurge = () => {
   });
 
   // Chart margins and dimensions
-  const margins = { top: 20, right: 80, bottom: 20, left: 140 };
+  const margins = { top: 20, right: 80, bottom: 20, left: 120 };
   const width = chartDimensions.width || 800;
-  const height = chartDimensions.height || 600;
+  const height = chartDimensions.height || 500;
   const innerWidth = width - margins.left - margins.right;
   const innerHeight = height - margins.top - margins.bottom;
 
@@ -161,7 +159,7 @@ const AfricasSolarSurge = () => {
   const fetchData = async () => {
     try {
       const res = (
-        await csv("/assets/data/cleaned_energy_data.csv", (d) => {
+        await csv("/assets/data/energyData.csv", (d) => {
           if (d.year === `${currentYear}`) {
             return {
               country: d.country,
@@ -205,43 +203,6 @@ const AfricasSolarSurge = () => {
         .range([0, innerHeight])
         .padding(0.1)
     : null;
-
-  // Show data card with statistics
-  const showDataCard = (e, country) => {
-    const svgRect = e.currentTarget.ownerSVGElement.getBoundingClientRect();
-
-    const countryData = data.find((d) => d.country === country);
-    if (!countryData) return;
-
-    // Calculate some basic statistics
-    const currentValue = countryData[currentYear] || 0;
-    let growthRate = null;
-    const prevYear = currentYear - 10;
-
-    if (countryData[prevYear]) {
-      growthRate = (currentValue / countryData[prevYear] - 1) * 100;
-    }
-
-    setDataCardInfo({
-      country,
-      currentValue,
-      growthRate,
-      x: e.clientX - svgRect.left + 10,
-      y: e.clientY - svgRect.top + 10,
-      year: currentYear,
-    });
-
-    setIsDataCardVisible(true);
-  };
-
-  // Handle country selection
-  const toggleCountrySelection = (country) => {
-    setSelectedCountries((prev) =>
-      prev.includes(country)
-        ? prev.filter((c) => c !== country)
-        : [...prev, country]
-    );
-  };
 
   // Handle downloads
   const handleDownload = () => {
@@ -433,69 +394,11 @@ const AfricasSolarSurge = () => {
             </div>
           )}
 
-          {/* Data Card */}
-          {isDataCardVisible && dataCardInfo && (
-            <div
-              style={{
-                position: "absolute",
-                left: `${dataCardInfo.x + margins.left}px`,
-                top: `${dataCardInfo.y + margins.top}px`,
-              }}
-              className="z-30 bg-white shadow-lg border rounded-md p-4 w-64"
-            >
-              <div className="flex justify-between items-center">
-                <h3 className="font-semibold">{dataCardInfo.country}</h3>
-                <button
-                  onClick={() => setIsDataCardVisible(false)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  <Icon icon="ic:round-close" width="18" height="18" />
-                </button>
-              </div>
-
-              <div className="mt-3 space-y-2">
-                <div>Region: {dataCardInfo.region}</div>
-                <div>
-                  Population ({dataCardInfo.year}):{" "}
-                  {dataCardInfo.currentValue.toLocaleString()}
-                </div>
-                {dataCardInfo.growthRate !== null && (
-                  <div>
-                    10-Year Growth Rate:
-                    <span
-                      className={
-                        dataCardInfo.growthRate >= 0
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }
-                    >
-                      {dataCardInfo.growthRate.toFixed(2)}%
-                    </span>
-                  </div>
-                )}
-                <div className="pt-2">
-                  <button
-                    onClick={() => toggleCountrySelection(dataCardInfo.country)}
-                    className={`text-sm py-1 px-2 rounded ${
-                      selectedCountries.includes(dataCardInfo.country)
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-200 hover:bg-gray-300"
-                    }`}
-                  >
-                    {selectedCountries.includes(dataCardInfo.country)
-                      ? "Remove from Selection"
-                      : "Add to Selection"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Main chart container */}
           <div className="px-4 pb-8">
             <div
               ref={chartContainerRef}
-              className={`bg-white flex justify-center px-3 my-5 mx-auto w-full max-w-screen-2xl rounded-md relative ${
+              className={`bg-white flex justify-center px-3 my-5 mx-auto w-full max-w-screen-xl rounded-md relative ${
                 isFullscreen ? "h-full" : ""
               }`}
             >
@@ -527,40 +430,6 @@ const AfricasSolarSurge = () => {
                             </option>
                           ))}
                       </select>
-                    </div>
-                  )}
-
-                  {/* Selection indicator */}
-                  {selectedCountries.length > 0 && (
-                    <div className="mb-4 flex flex-wrap items-center gap-2">
-                      <span className="text-sm">Selected:</span>
-                      {selectedCountries.map((country) => (
-                        <div
-                          key={country}
-                          className="flex items-center bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
-                        >
-                          {country}
-                          <button
-                            className="ml-1 text-blue-800"
-                            onClick={() => toggleCountrySelection(country)}
-                          >
-                            <Icon
-                              icon="ic:round-close"
-                              width="14"
-                              height="14"
-                            />
-                          </button>
-                        </div>
-                      ))}
-                      <button
-                        className="text-xs text-gray-600 underline ml-2"
-                        onClick={() => {
-                          setShowOnlySelected(false);
-                          setSelectedCountries([]);
-                        }}
-                      >
-                        Clear all
-                      </button>
                     </div>
                   )}
 
@@ -676,30 +545,10 @@ const AfricasSolarSurge = () => {
                         {datum?.country}
                       </text>
                     ))} */}
-
-                    {/* Country labels */}
-                    {filteredData?.map((datum) => (
-                      <text
-                        key={`country-${datum.country}`}
-                        className={`${
-                          hoveredCountry === datum?.country
-                            ? "opacity-100"
-                            : "opacity-60"
-                        }`}
-                        fill={"#000"}
-                        x={-5}
-                        y={yScale(datum?.country) + yScale.bandwidth() / 2}
-                        dy={".36em"}
-                        fontSize={12}
-                        fontWeight={400}
-                        style={{ textAnchor: "end" }}
-                      >
-                        {datum?.country}
-                      </text>
-                    ))}
-
                     {/* Bars for current year */}
                     {filteredData?.map((datum) => {
+                      console.log(datum);
+
                       return (
                         <rect
                           key={`bar-${datum.country}`}
@@ -733,50 +582,12 @@ const AfricasSolarSurge = () => {
                               content: "",
                             });
                           }}
-                          onClick={(e) => {
-                            showDataCard(e, datum.country);
+                          onClick={() => {
+                            showDataCard(datum.country);
                           }}
                         />
                       );
                     })}
-
-                    {/* Bars for compare year if enabled */}
-                    {compareYear &&
-                      filteredData?.map((datum) => (
-                        <rect
-                          key={`bar-${datum.country}`}
-                          x={0}
-                          width={xScale(datum[compareYear] || 0)}
-                          height={yScale.bandwidth() / 2}
-                          y={yScale(datum?.country) + yScale.bandwidth() / 2}
-                          fill={"rgba(0,0,0,0.3)"}
-                        />
-                      ))}
-
-                    {/* Solar consumption values for current year */}
-                    {filteredData?.map((datum) => (
-                      <text
-                        key={`pop-${datum.country}`}
-                        fill={"#000"}
-                        x={xScale(datum?.solar_consumption || 0) + 5}
-                        y={
-                          yScale(datum?.country) +
-                          (compareYear
-                            ? yScale.bandwidth() / 4
-                            : yScale.bandwidth() / 2)
-                        }
-                        dy={".36em"}
-                        fontSize={12}
-                        className={`${
-                          hoveredCountry === datum?.country
-                            ? "opacity-100"
-                            : "opacity-60"
-                        }`}
-                        fontWeight={400}
-                      >
-                        {datum?.solar_consumption?.toLocaleString()}
-                      </text>
-                    ))}
 
                     {/* Bars for compare year if enabled */}
                     {/* {compareYear &&
