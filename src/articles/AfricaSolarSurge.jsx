@@ -7,7 +7,7 @@ import {
   BarChart as BarChartIcon,
   PieChart as PieChartIcon,
 } from "lucide-react";
-import { SolarShare } from "../charts";
+import { AfricaSolarChoropleth, SolarShare } from "../charts";
 import { csv } from "d3";
 import { Icon } from "@iconify/react";
 
@@ -22,7 +22,9 @@ export default function AfricaSolarSurge() {
     visible: false,
     content: "",
   });
-  const [data, setData] = useState({ overView: null });
+  const [data, setData] = useState(null);
+  const [fullData, setFullData] = useState(null);
+  const [adoptionData, setAdoptionData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
@@ -30,13 +32,42 @@ export default function AfricaSolarSurge() {
       const res = await csv("/assets/data/cleaned_energy_data.csv", (d) => {
         if (d.country === `Africa (Ember)`) {
           d["solar_electricity"] = +d.solar_electricity;
+          d["solar_consumption"] = +d.solar_consumption;
+          d["solar_elec_per_capita"] = +d.solar_elec_per_capita;
           d["year"] = +d.year;
           return d;
         }
       });
+      const newRes = await csv("/assets/data/cleaned_energy_data.csv", (d) => {
+        d["solar_electricity"] = +d.solar_electricity;
+        d["solar_consumption"] = +d.solar_consumption;
+        d["solar_elec_per_capita"] = +d.solar_elec_per_capita;
+        d["year"] = +d.year;
+        return d;
+      });
 
-      console.log(res);
-      setData(res);
+      // Filter data for overview section
+      const overviewData = newRes?.filter(
+        (newSingleRes) => newSingleRes.country === `Africa (Ember)`
+      );
+
+      const skippedAdoptionSet = [
+        "Africa",
+        "Africa (EI)",
+        "Africa (EIA)",
+        "Africa (Ember)",
+        "Africa (Shift)",
+      ];
+
+      // Filter data for adoption section
+      const adoption_data = newRes?.filter(
+        (newSingleRes) => !skippedAdoptionSet.includes(newSingleRes.country)
+      );
+
+      setData(overviewData);
+      setAdoptionData(adoption_data);
+      console.log(adoption_data);
+      setFullData(newRes);
       setLoading(false);
     } catch (error) {
       console.log("Error fetching data:", error);
@@ -336,6 +367,7 @@ export default function AfricaSolarSurge() {
                     <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-yellow-500"></div>
                   </div>
                 ) : (
+                  // Line chart
                   <SolarShare
                     data={data}
                     isFullscreen={isFullscreen}
@@ -366,16 +398,83 @@ export default function AfricaSolarSurge() {
               increasing recognition of climate change challenges.
             </p>
 
-            <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-              <h3 className="text-xl font-semibold mb-4">
-                Solar Consumption Growth
-              </h3>
-              <div className="bg-gray-100 h-64 flex items-center justify-center rounded-lg border border-gray-200">
-                <div className="text-center text-gray-500">
-                  <TrendingUp className="h-12 w-12 mx-auto mb-2" />
-                  <p className="text-sm font-medium">
-                    Line Chart: Solar Consumption Growth (TWh) 2000-2022
-                  </p>
+            <div className="bg-white h-fit p-6 rounded-lg shadow-md mb-8">
+              <div className="mb-2 flex h-fit items-center ">
+                <h3 className="flex-1  text-xl font-semibold mb-4">
+                  Solar Consumption Growth
+                </h3>
+                {/* RHS - Action buttons */}
+                <div className="w-fit h-8 flex justify-center gap-2 ">
+                  {/* Fullscreen toggle button */}
+                  <div
+                    onClick={toggleFullscreen}
+                    onMouseEnter={() => {
+                      setIconTooltip({
+                        visible: true,
+                        content: isFullscreen
+                          ? `Exit Fullscreen`
+                          : `Fullscreen`,
+                      });
+                    }}
+                    onMouseLeave={() => {
+                      setIconTooltip({
+                        visible: false,
+                        content: ``,
+                      });
+                    }}
+                    className="relative w-fit rounded-sm hover:bg-gray-300 p-1.5 bg-gray-200 flex items-center justify-center cursor-pointer"
+                  >
+                    {iconTooltip?.visible &&
+                      (iconTooltip?.content === "Fullscreen" ||
+                        iconTooltip?.content === "Exit Fullscreen") && (
+                        <div className="absolute bg-white border border-[#ccc] px-[10px] py-[6px] -top-9 text-xs rounded-sm">
+                          {iconTooltip?.content}
+                        </div>
+                      )}
+                    <Icon
+                      icon={
+                        isFullscreen
+                          ? "material-symbols-light:fullscreen-exit"
+                          : "material-symbols-light:fullscreen"
+                      }
+                      className="w-5 h-5"
+                    />
+                  </div>
+
+                  {/* Download button */}
+                  <div
+                    onClick={() => setIsModalOpen(true)}
+                    onMouseEnter={() => {
+                      setIconTooltip({
+                        visible: true,
+                        content: `Download`,
+                      });
+                    }}
+                    onMouseLeave={() => {
+                      setIconTooltip({
+                        visible: false,
+                        content: ``,
+                      });
+                    }}
+                    className="relative rounded-sm hover:bg-gray-300 p-1.5 bg-gray-200 flex items-center justify-center cursor-pointer"
+                  >
+                    {iconTooltip?.visible &&
+                      iconTooltip?.content === "Download" && (
+                        <div className="absolute bg-white border border-[#ccc] px-[10px] py-[6px] -top-9 text-xs rounded-sm">
+                          {iconTooltip?.content}
+                        </div>
+                      )}
+                    <Icon
+                      icon={"material-symbols-light:download-sharp"}
+                      className="w-5 h-5"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white max-h-[900px] flex items-center justify-center rounded-lg border border-gray-200">
+                <div className="text-center text-gray-500 h-full">
+                  {/* Choropleth map */}
+                  <AfricaSolarChoropleth data={adoptionData} />
                 </div>
               </div>
               <p className="mt-4 text-gray-700">

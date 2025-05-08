@@ -1,14 +1,7 @@
 import { extent, scaleLinear, line, curveMonotoneX } from "d3";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Icon } from "@iconify/react";
 
-import {
-  ChevronDown,
-  ChevronUp,
-  Maximize,
-  Minimize,
-  Download,
-} from "lucide-react";
 import html2canvas from "html2canvas";
 
 const SolarShare = ({

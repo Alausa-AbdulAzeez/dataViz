@@ -111,7 +111,7 @@ const Range = ({
           value={value}
           onChange={handleChange}
           disabled={disabled}
-          className="absolute top-0 w-full h-full opacity-0 cursor-pointer"
+          className="left-0 absolute top-0 w-full h-full opacity-0 cursor-pointer"
           style={{ height }}
         />
       </div>
