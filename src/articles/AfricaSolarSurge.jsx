@@ -12,9 +12,22 @@ import { csv } from "d3";
 import { Icon } from "@iconify/react";
 
 export default function AfricaSolarSurge() {
+  const THEME = {
+    borderColor: "#E5E2E0",
+    primaryColor: "#f97316",
+    primaryColorLight: "#f97316",
+    accentColor: "#FFB845",
+    textColor: "#333333",
+    backgroundColor: "#FFFFFF",
+  };
   const [activeTab, setActiveTab] = useState("overview");
+  // Overview tab
   const chartContainerRef = useRef(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Adoption tab ref
+  const svgRef = useRef(null);
+  const [isChoroplethModalOpen, setIsChoroplethModalOpen] = useState(false);
 
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -23,6 +36,7 @@ export default function AfricaSolarSurge() {
     content: "",
   });
   const [data, setData] = useState(null);
+  const [screenSize, setScreenSize] = useState("large");
   const [fullData, setFullData] = useState(null);
   const [adoptionData, setAdoptionData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -113,7 +127,7 @@ export default function AfricaSolarSurge() {
     };
   }, []);
 
-  // Fullscreen toggle functionality
+  // Fullscreen toggle functionality (for overview tab)
   const toggleFullscreen = useCallback(() => {
     if (!chartContainerRef.current) return;
 
@@ -124,6 +138,28 @@ export default function AfricaSolarSurge() {
         chartContainerRef.current.webkitRequestFullscreen();
       } else if (chartContainerRef.current.msRequestFullscreen) {
         chartContainerRef.current.msRequestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+    }
+    // No need to set isFullscreen here as it will be handled by the event listener
+  }, [isFullscreen]);
+  const toggleAdoptionFullscreen = useCallback(() => {
+    if (!svgRef.current) return;
+
+    if (!isFullscreen) {
+      if (svgRef.current.requestFullscreen) {
+        svgRef.current.requestFullscreen();
+      } else if (svgRef.current.webkitRequestFullscreen) {
+        svgRef.current.webkitRequestFullscreen();
+      } else if (svgRef.current.msRequestFullscreen) {
+        svgRef.current.msRequestFullscreen();
       }
     } else {
       if (document.exitFullscreen) {
@@ -370,7 +406,10 @@ export default function AfricaSolarSurge() {
                   // Line chart
                   <SolarShare
                     data={data}
+                    THEME={THEME}
                     isFullscreen={isFullscreen}
+                    screenSize={screenSize}
+                    setScreenSize={setScreenSize}
                     toggleFullscreen={toggleFullscreen}
                     iconTooltip={iconTooltip}
                     setIconTooltip={setIconTooltip}
@@ -407,7 +446,7 @@ export default function AfricaSolarSurge() {
                 <div className="w-fit h-8 flex justify-center gap-2 ">
                   {/* Fullscreen toggle button */}
                   <div
-                    onClick={toggleFullscreen}
+                    onClick={toggleAdoptionFullscreen}
                     onMouseEnter={() => {
                       setIconTooltip({
                         visible: true,
@@ -443,7 +482,7 @@ export default function AfricaSolarSurge() {
 
                   {/* Download button */}
                   <div
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => setIsChoroplethModalOpen(true)}
                     onMouseEnter={() => {
                       setIconTooltip({
                         visible: true,
@@ -474,7 +513,13 @@ export default function AfricaSolarSurge() {
               <div className="bg-white max-h-[900px] flex items-center justify-center rounded-lg border border-gray-200">
                 <div className="text-center text-gray-500 h-full">
                   {/* Choropleth map */}
-                  <AfricaSolarChoropleth data={adoptionData} />
+                  <AfricaSolarChoropleth
+                    isFullscreen={isFullscreen}
+                    svgRef={svgRef}
+                    data={adoptionData}
+                    isModalOpen={isChoroplethModalOpen}
+                    setIsModalOpen={setIsChoroplethModalOpen}
+                  />
                 </div>
               </div>
               <p className="mt-4 text-gray-700">

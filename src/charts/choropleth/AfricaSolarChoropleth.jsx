@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
+import { Icon } from "@iconify/react";
 import * as d3 from "d3";
 import { Range } from "../../components";
+import html2canvas from "html2canvas";
 
 // Mock data for solar adoption across African countries
 // In a real application, you would replace this with your actual data
@@ -61,8 +63,13 @@ const solarData = [
   { id: "ZWE", name: "Zimbabwe", value: 10.9 },
 ];
 
-export default function AfricaSolarChoropleth({ data }) {
-  const svgRef = useRef(null);
+export default function AfricaSolarChoropleth({
+  data,
+  isFullscreen,
+  svgRef,
+  isModalOpen,
+  setIsModalOpen,
+}) {
   const chartRef = useRef(null);
   const tooltipRef = useRef(null);
   const [solarData, setSolarData] = useState(null);
@@ -70,9 +77,56 @@ export default function AfricaSolarChoropleth({ data }) {
   const [years, setYears] = useState({ min: 2000, max: 2023 });
 
   // Add state for filtering
+  const [activeDownloadTab, setActiveDownloadTab] = useState("Chart");
   const [hoveredBin, setHoveredBin] = useState(null);
   const [isHovering, setIsHovering] = useState(false);
   const [selectedBins, setSelectedBins] = useState([]);
+
+  // Helper functions for download handlers
+  const onDownload = (type, ref) => {
+    console.log(type, ref);
+    if (type === "PNG") {
+      html2canvas(ref.current).then((canvas) => {
+        canvas.toBlob((blob) => {
+          saveAs(blob, `chart-${new Date().getTime()}.png`);
+        });
+      });
+    } else if (type === "SVG") {
+      const svgElement = ref.current.querySelector("svg");
+      const svgData = new XMLSerializer().serializeToString(svgElement);
+      const svgBlob = new Blob([svgData], {
+        type: "image/svg+xml;charset=utf-8",
+      });
+      saveAs(svgBlob, `population-chart-${new Date().getTime()}.svg`);
+    } else if (type === "CSV") {
+      const { currentYear, data } = ref;
+      let csvContent = "Country,Date,solar_electricity\n";
+
+      data.forEach((item) => {
+        csvContent += `${item.country},${item.year},${item.solar_electricity}\n`;
+      });
+
+      const csvBlob = new Blob([csvContent], {
+        type: "text/csv;charset=utf-8",
+      });
+      saveAs(csvBlob, `data-${currentYear}-${new Date().getTime()}.csv`);
+    } else if (type === "FullCSV") {
+      const { data } = ref;
+      const years = Object.keys(data[0]).filter((key) => !isNaN(parseInt(key)));
+
+      let csvContent = "country,year,solar_electricity" + "\n";
+
+      data.forEach((item) => {
+        csvContent += `${item.country},${item.year},${item.solar_electricity}`;
+        csvContent += "\n";
+      });
+
+      const csvBlob = new Blob([csvContent], {
+        type: "text/csv;charset=utf-8",
+      });
+      saveAs(csvBlob, `population-data-full-${new Date().getTime()}.csv`);
+    }
+  };
 
   function rgbToRgba(rgbValue, opacity) {
     // Regular expression to extract the r, g, and b values
@@ -111,7 +165,7 @@ export default function AfricaSolarChoropleth({ data }) {
   useEffect(() => {
     const createHiddenChoropleth = async () => {
       // Clear previous chart if any
-      d3.select(chert.current).selectAll("*").remove();
+      d3.select(chartRef.current).selectAll("*").remove();
 
       // Define African country ISO codes
       const africanCountryCodes = [
@@ -579,14 +633,18 @@ export default function AfricaSolarChoropleth({ data }) {
         .text((d) => d.label);
 
       // Add title
-      // svg
-      //   .append("text")
-      //   .attr("x", width / 2 - margin.left - margin.right)
-      //   .attr("y", -10)
-      //   .attr("text-anchor", "middle")
-      //   .style("font-size", "16px")
-      //   .style("font-weight", "bold")
-      //   .text("Solar Energy Consumption Across Africa (KWh)");
+
+      {
+        isFullscreen &&
+          svg
+            .append("text")
+            .attr("x", width / 2 - margin.left - margin.right)
+            .attr("y", 110)
+            .attr("text-anchor", "middle")
+            .style("font-size", "20px")
+            .style("font-weight", 500)
+            .text("Solar Energy Consumption Across Africa (KWh)");
+      }
 
       // Helper function to check if a value is in the selected bins or hover state
       const isInSelectedBins = (value) => {
@@ -694,6 +752,25 @@ export default function AfricaSolarChoropleth({ data }) {
     }
   };
 
+  // Handle downloads
+  const handleDownload = () => {
+    if (onDownload && typeof onDownload === "function") {
+      onDownload("PNG", chartRef);
+    }
+  };
+
+  const handleSVGDownload = () => {
+    if (onDownload && typeof onDownload === "function") {
+      onDownload("SVG", chartRef);
+    }
+  };
+
+  const handleFullCSVDownload = () => {
+    if (onDownload && typeof onDownload === "function") {
+      onDownload("FullCSV", { data });
+    }
+  };
+
   // Fullscreen toggle functionality
   const handleDataFilter = () => {
     return data?.filter((datum) => datum?.year === currentYear);
@@ -703,16 +780,104 @@ export default function AfricaSolarChoropleth({ data }) {
     setSolarData(handleDataFilter());
   }, [data, currentYear]);
 
-  console.log(solarData);
+  console.log(isModalOpen);
 
   return (
-    <div className="relative w-full h-full ">
+    <div className="relative w-full h-full">
+      {/* Download Modal */}
+      {isModalOpen && (
+        <div className="absolute w-full h-full flex items-start justify-center">
+          <div
+            onClick={() => setIsModalOpen(false)}
+            className="cursor-pointer absolute w-full h-full z-[10] bg-black opacity-40"
+          ></div>
+          <div className="mt-10 rounded-sm w-[80%] h-auto p-4 bg-white z-[20] cursor-pointer">
+            <div className="flex justify-between items-center text-xs font-semibold text-gray-500">
+              <div className="">DOWNLOAD</div>
+              <Icon
+                icon="ic:round-cancel"
+                className="hover:rotate-45 transition-all ease-in-out duration-300"
+                width="24"
+                height="24"
+                onClick={() => setIsModalOpen(false)}
+              />
+            </div>
+            <div className="mt-4 flex items-center gap-1.5 w-full justify-center">
+              <div
+                onClick={() => setActiveDownloadTab("Chart")}
+                className={`${
+                  activeDownloadTab === "Chart" && "bg-gray-300"
+                } flex-1 bg-gray-100 hover:bg-gray-200 text-sm flex items-center justify-center w-fit p-1 gap-1 cursor-pointer`}
+              >
+                <Icon icon={"hugeicons:chart"} className="h-4 w-4" />
+                <span>Chart</span>
+              </div>
+              <div
+                onClick={() => setActiveDownloadTab("Data")}
+                className={`text-sm flex-1 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-sm flex items-center justify-center w-fit p-1 gap-1 cursor-pointer ${
+                  activeDownloadTab === "Data" && "bg-gray-300"
+                }`}
+              >
+                <Icon
+                  icon={"icon-park-twotone:data-four"}
+                  className="h-4 w-4"
+                />
+                <span>Data</span>
+              </div>
+            </div>
+
+            {/* Download options */}
+            {activeDownloadTab === "Chart" && (
+              <div className="mt-4 flex flex-col w-full items-center gap-1.5">
+                <div
+                  onClick={handleDownload}
+                  className="w-full h-[100px] rounded-sm hover:bg-slate-200 items-center justify-center flex flex-col bg-slate-100"
+                >
+                  <div className="font-medium text-lg">Image (PNG)</div>
+                  <div className="text-sm">Suitable for most use cases</div>
+                </div>
+                <div
+                  onClick={handleSVGDownload}
+                  className="w-full rounded-sm hover:bg-slate-200 items-center h-[100px] justify-center flex flex-col bg-slate-100 cursor-pointer"
+                >
+                  <div className="font-medium text-lg">Vector Image (SVG)</div>
+                  <div className="text-sm">
+                    Scalable format, ideal for editing
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeDownloadTab === "Data" && (
+              <div className="mt-4 flex flex-col w-full items-center gap-1.5">
+                <div
+                  onClick={handleFullCSVDownload}
+                  className="w-full h-[100px] rounded-sm hover:bg-slate-200 items-center justify-center flex flex-col bg-slate-100 cursor-pointer"
+                >
+                  <div className="font-medium text-lg">
+                    Complete Dataset (CSV)
+                  </div>
+                  <div className="text-sm text-center">
+                    Download complete data
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Hidden chart  */}
       <svg
         ref={chartRef}
         className="fixed -top-[2000%] w-full h-full min-h-[500px]"
       />
-      <svg ref={svgRef} className="w-full h-full min-h-[500px]" />
+      <svg
+        ref={svgRef}
+        className={`bg-white ${
+          isFullscreen ? "fixed inset-0 z-50 max-w-none rounded-none" : ""
+        } w-full h-full min-h-[500px]`}
+      />
       <div
         ref={tooltipRef}
         className="absolute pointer-events-none bg-white p-2 rounded shadow-md opacity-0 border border-gray-300 text-sm"

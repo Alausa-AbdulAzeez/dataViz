@@ -13,6 +13,9 @@ const SolarShare = ({
   chartContainerRef,
   isModalOpen,
   setIsModalOpen,
+  THEME,
+  screenSize,
+  setScreenSize,
 }) => {
   const [selectedPoint, setSelectedPoint] = useState(null);
   const chartRef = useRef(null);
@@ -22,16 +25,6 @@ const SolarShare = ({
     width: 0,
     height: 0,
   });
-  const [screenSize, setScreenSize] = useState("large");
-
-  const THEME = {
-    borderColor: "#E5E2E0",
-    primaryColor: "#f97316",
-    primaryColorLight: "#f97316",
-    accentColor: "#FFB845",
-    textColor: "#333333",
-    backgroundColor: "#FFFFFF",
-  };
 
   // Update chart dimensions on window resize
   useEffect(() => {
