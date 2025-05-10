@@ -511,7 +511,7 @@ export default function AfricaSolarSurge() {
                 </div>
               </div>
               <div className="bg-white max-h-[900px] flex items-center justify-center rounded-lg border border-gray-200">
-                <div className="text-center text-gray-500 h-full">
+                <div className="text-center  h-full">
                   {/* Choropleth map */}
                   <AfricaSolarChoropleth
                     isFullscreen={isFullscreen}

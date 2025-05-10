@@ -4,65 +4,6 @@ import * as d3 from "d3";
 import { Range } from "../../components";
 import html2canvas from "html2canvas";
 
-// Mock data for solar adoption across African countries
-// In a real application, you would replace this with your actual data
-const solarData = [
-  { id: "DZA", name: "Algeria", value: 12.7 },
-  { id: "AGO", name: "Angola", value: 5.3 },
-  { id: "BEN", name: "Benin", value: 3.8 },
-  { id: "BWA", name: "Botswana", value: 18.9 },
-  { id: "BFA", name: "Burkina Faso", value: 7.2 },
-  { id: "BDI", name: "Burundi", value: 2.1 },
-  { id: "CMR", name: "Cameroon", value: 4.5 },
-  { id: "CPV", name: "Cape Verde", value: 20.4 },
-  { id: "CAF", name: "Central African Republic", value: 1.8 },
-  { id: "TCD", name: "Chad", value: 2.3 },
-  { id: "COM", name: "Comoros", value: 3.7 },
-  { id: "COD", name: "Democratic Republic of Congo", value: 2.9 },
-  { id: "DJI", name: "Djibouti", value: 7.8 },
-  { id: "EGY", name: "Egypt", value: 25.6 },
-  { id: "GNQ", name: "Equatorial Guinea", value: 3.4 },
-  { id: "ERI", name: "Eritrea", value: 4.2 },
-  { id: "ETH", name: "Ethiopia", value: 12.3 },
-  { id: "GAB", name: "Gabon", value: 5.1 },
-  { id: "GMB", name: "Gambia", value: 6.7 },
-  { id: "GHA", name: "Ghana", value: 9.8 },
-  { id: "GIN", name: "Guinea", value: 3.1 },
-  { id: "GNB", name: "Guinea-Bissau", value: 2.5 },
-  { id: "CIV", name: "Ivory Coast", value: 5.6 },
-  { id: "KEN", name: "Kenya", value: 19.2 },
-  { id: "LSO", name: "Lesotho", value: 8.9 },
-  { id: "LBR", name: "Liberia", value: 2.7 },
-  { id: "LBY", name: "Libya", value: 14.5 },
-  { id: "MDG", name: "Madagascar", value: 7.3 },
-  { id: "MWI", name: "Malawi", value: 8.7 },
-  { id: "MLI", name: "Mali", value: 9.4 },
-  { id: "MRT", name: "Mauritania", value: 11.2 },
-  { id: "MUS", name: "Mauritius", value: 22.8 },
-  { id: "MAR", name: "Morocco", value: 28.7 },
-  { id: "MOZ", name: "Mozambique", value: 10.3 },
-  { id: "NAM", name: "Namibia", value: 21.5 },
-  { id: "NER", name: "Niger", value: 6.3 },
-  { id: "NGA", name: "Nigeria", value: 8.4 },
-  { id: "COG", name: "Republic of Congo", value: 3.8 },
-  { id: "RWA", name: "Rwanda", value: 15.7 },
-  { id: "STP", name: "Sao Tome and Principe", value: 4.8 },
-  { id: "SEN", name: "Senegal", value: 12.4 },
-  { id: "SYC", name: "Seychelles", value: 25.9 },
-  { id: "SLE", name: "Sierra Leone", value: 3.2 },
-  { id: "SOM", name: "Somalia", value: 8.7 },
-  { id: "ZAF", name: "South Africa", value: 27.8 },
-  { id: "SDS", name: "South Sudan", value: 1.5 },
-  { id: "SDN", name: "Sudan", value: 9.6 },
-  { id: "SWZ", name: "Swaziland", value: 7.8 },
-  { id: "TZA", name: "Tanzania", value: 13.4 },
-  { id: "TGO", name: "Togo", value: 4.5 },
-  { id: "TUN", name: "Tunisia", value: 19.7 },
-  { id: "UGA", name: "Uganda", value: 11.2 },
-  { id: "ZMB", name: "Zambia", value: 14.8 },
-  { id: "ZWE", name: "Zimbabwe", value: 10.9 },
-];
-
 export default function AfricaSolarChoropleth({
   data,
   isFullscreen,
@@ -70,17 +11,45 @@ export default function AfricaSolarChoropleth({
   isModalOpen,
   setIsModalOpen,
 }) {
-  const chartRef = useRef(null);
   const tooltipRef = useRef(null);
+  const chartRef = useRef(null);
+
   const [solarData, setSolarData] = useState(null);
+  const [africaGeoData, setAfricaGeoData] = useState(null);
   const [currentYear, setCurrentYear] = useState(2023);
   const [years, setYears] = useState({ min: 2000, max: 2023 });
+  const [tooltipInfo, setTooltipInfo] = useState({
+    visible: false,
+    x: 0,
+    y: 0,
+    country: "",
+    value: 0,
+  });
 
   // Add state for filtering
   const [activeDownloadTab, setActiveDownloadTab] = useState("Chart");
   const [hoveredBin, setHoveredBin] = useState(null);
   const [isHovering, setIsHovering] = useState(false);
   const [selectedBins, setSelectedBins] = useState([]);
+
+  // Define bin ranges for our filter categories
+  const bins = [
+    { min: null, max: null, label: "No data", color: "#CCCCCC" }, // No data bin with gray color
+    { min: 0, max: 52, label: "0 – 52 kWh", color: "#fff5eb" },
+    { min: 52, max: 104, label: "52 – 104 kWh", color: "#fed8a6" },
+    { min: 104, max: 156, label: "104 – 156 kWh", color: "#fd9243" },
+    { min: 156, max: 208, label: "156 – 208 kWh", color: "#f05b23" },
+    { min: 208, max: 260, label: "208 – 260 kWh", color: "#bd2e1e" },
+  ];
+
+  // Define dimensions
+  const width = 1700;
+  const height = 800;
+  const margin = { top: 30, right: 20, bottom: 80, left: 20 };
+  const legendWidth = 1000;
+  const legendHeight = 25;
+  const legendY = height - margin.bottom;
+  const binWidth = legendWidth / bins.length;
 
   // Helper functions for download handlers
   const onDownload = (type, ref) => {
@@ -100,10 +69,10 @@ export default function AfricaSolarChoropleth({
       saveAs(svgBlob, `population-chart-${new Date().getTime()}.svg`);
     } else if (type === "CSV") {
       const { currentYear, data } = ref;
-      let csvContent = "Country,Date,solar_electricity\n";
+      let csvContent = "Country,Date,solar_elec_per_capita\n";
 
       data.forEach((item) => {
-        csvContent += `${item.country},${item.year},${item.solar_electricity}\n`;
+        csvContent += `${item.country},${item.year},${item.solar_elec_per_capita}\n`;
       });
 
       const csvBlob = new Blob([csvContent], {
@@ -114,17 +83,17 @@ export default function AfricaSolarChoropleth({
       const { data } = ref;
       const years = Object.keys(data[0]).filter((key) => !isNaN(parseInt(key)));
 
-      let csvContent = "country,year,solar_electricity" + "\n";
+      let csvContent = "country,year,solar_elec_per_capita" + "\n";
 
       data.forEach((item) => {
-        csvContent += `${item.country},${item.year},${item.solar_electricity}`;
+        csvContent += `${item.country},${item.year},${item.solar_elec_per_capita}`;
         csvContent += "\n";
       });
 
       const csvBlob = new Blob([csvContent], {
         type: "text/csv;charset=utf-8",
       });
-      saveAs(csvBlob, `population-data-full-${new Date().getTime()}.csv`);
+      saveAs(csvBlob, `data-full-${new Date().getTime()}.csv`);
     }
   };
 
@@ -148,579 +117,10 @@ export default function AfricaSolarChoropleth({
     return `rgba(${r}, ${g}, ${b}, ${opacity})`;
   }
 
-  // Define bin ranges for our filter categories
-  const bins = [
-    { min: 0, max: 52, label: "0 – 52 kWh", color: "#fff5eb" },
-    { min: 52, max: 104, label: "52 – 104 kWh", color: "#fed8a6" },
-    { min: 104, max: 156, label: "104 – 156 kWh", color: "#fd9243" },
-    { min: 156, max: 208, label: "156 – 208 kWh", color: "#f05b23" },
-    { min: 208, max: 260, label: "208 – 260 kWh", color: "#bd2e1e" },
-  ];
-
   // Initialize with all bins selected
   useEffect(() => {
     setSelectedBins(bins.map((_, i) => i));
   }, []);
-
-  useEffect(() => {
-    const createHiddenChoropleth = async () => {
-      // Clear previous chart if any
-      d3.select(chartRef.current).selectAll("*").remove();
-
-      // Define African country ISO codes
-      const africanCountryCodes = [
-        "DZA",
-        "AGO",
-        "BEN",
-        "BWA",
-        "BFA",
-        "BDI",
-        "CMR",
-        "CPV",
-        "CAF",
-        "TCD",
-        "COM",
-        "COD",
-        "DJI",
-        "EGY",
-        "GNQ",
-        "ERI",
-        "ETH",
-        "GAB",
-        "GMB",
-        "GHA",
-        "GIN",
-        "GNB",
-        "CIV",
-        "KEN",
-        "LSO",
-        "LBR",
-        "LBY",
-        "MDG",
-        "MWI",
-        "MLI",
-        "MRT",
-        "MUS",
-        "MAR",
-        "MOZ",
-        "NAM",
-        "NER",
-        "NGA",
-        "COG",
-        "RWA",
-        "STP",
-        "SEN",
-        "SYC",
-        "SLE",
-        "SOM",
-        "ZAF",
-        "SDS",
-        "SDN",
-        "SWZ",
-        "TZA",
-        "TGO",
-        "TUN",
-        "UGA",
-        "ZMB",
-        "ZWE",
-      ];
-
-      // Get GeoJSON data
-      const response = await fetch(
-        "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson"
-      );
-      const worldData = await response.json();
-      // Filter for African countries only
-      const africaData = {
-        type: "FeatureCollection",
-        features: worldData.features.filter((d) =>
-          africanCountryCodes.includes(d.id)
-        ),
-      };
-
-      // Set up dimensions
-      const width = 1700;
-      const height = 800;
-      const margin = { top: 30, right: 20, bottom: 80, left: 20 }; // Increased bottom margin for legend
-
-      // Create SVG
-      const svg = d3
-        .select(chartRef.current)
-        .attr("viewBox", `0 0 ${width} ${height - 50}`)
-        .append("g")
-        .attr("transform", `translate(${margin.left}, -100)`);
-
-      // Create a tooltip div
-      const tooltip = d3.select(tooltipRef.current);
-
-      // Define color scale
-      const colorScale = solarData
-        ? d3
-            .scaleSequential(d3.interpolateYlOrRd)
-            .domain(
-              d3.extent(solarData, (datum) => datum?.solar_elec_per_capita)
-            )
-        : null; // Assuming max value is 30 KWh
-
-      // Create projection and path generator
-      const projection = d3
-        .geoMercator()
-        .scale(400)
-        .center([15, 5]) // Center on Africa
-        .translate([width / 2, height / 2]);
-
-      const pathGenerator = d3.geoPath().projection(projection);
-
-      // Create interactive legend
-      const legendWidth = 1000;
-      const legendHeight = 25;
-      const legendY = height - margin.bottom;
-
-      const legend = svg
-        .append("g")
-        .attr("class", "legend")
-        .attr(
-          "transform",
-          `translate(${(width - margin.right - legendWidth) / 2}, ${
-            legendY + 80
-          })`
-        );
-
-      // Create legend title
-      legend
-        .append("text")
-        .attr("x", legendWidth / 2)
-        .attr("y", -40)
-        .attr("text-anchor", "middle")
-        .style("font-size", "20px")
-        .style("font-weight", "semi-bold")
-        .text(
-          "Solar Energy Consumption (KWh) - Hover to Filter, Click to Select"
-        );
-
-      // Create the bin rectangles for the interactive legend
-      const binWidth = legendWidth / bins.length;
-
-      legend
-        .selectAll(".legend-bin")
-        .data(bins)
-        .enter()
-        .append("rect")
-        .attr("class", "legend-bin")
-        .attr("x", (d, i) => i * binWidth)
-        .attr("y", -20)
-        .attr("width", binWidth)
-        .attr("height", legendHeight)
-        .attr("fill", (d, i) => {
-          // When hovering, highlight only the hovered bin
-          if (isHovering && hoveredBin !== null) {
-            return hoveredBin === i
-              ? d.color
-              : getColorWithOpacity(d.color, 0.1);
-          }
-          // Otherwise show selected bins
-          return selectedBins.includes(i)
-            ? d.color
-            : getColorWithOpacity(d.color, 0.1);
-        })
-        .attr("stroke", "#333")
-        .attr("stroke-width", 1)
-        .style("cursor", "pointer")
-        .on("mouseenter", (event, d) => {
-          const index = bins.findIndex((bin) => bin.min === d.min);
-          setHoveredBin(index);
-          setIsHovering(true);
-        })
-        .on("mouseleave", () => {
-          setIsHovering(false);
-        })
-        .on("click", (event, d) => {
-          const index = bins.findIndex((bin) => bin.min === d.min);
-          const newSelectedBins = [...selectedBins];
-
-          if (newSelectedBins.includes(index)) {
-            // Remove from selection
-            setSelectedBins(
-              newSelectedBins.filter((binIndex) => binIndex !== index)
-            );
-          } else {
-            // Add to selection
-            setSelectedBins([...newSelectedBins, index]);
-          }
-        });
-
-      // Add legend labels (moved below the bins)
-      legend
-        .selectAll(".legend-label")
-        .data(bins)
-        .enter()
-        .append("text")
-        .attr("class", "legend-label")
-        .attr("x", (d, i) => i * binWidth + binWidth / 2)
-        .attr("y", 25) // Moved below the bins
-        .attr("text-anchor", "middle")
-        .attr("fill", "#000")
-        .style("font-size", "18px")
-        .style("font-weight", "500")
-        .style("cursor", "pointer")
-        .text((d) => d.label);
-
-      // Title would be visible for the hidden chart
-      svg
-        .append("text")
-        .attr("x", width / 2 - margin.left - margin.right)
-        .attr("y", -10)
-        .attr("text-anchor", "middle")
-        .style("font-size", "16px")
-        .style("font-weight", "bold")
-        .text("Solar Energy Consumption Across Africa (KWh)");
-
-      // Helper function to check if a value is in the selected bins or hover state
-      const isInSelectedBins = (value) => {
-        // If hovering over a bin, only show countries in that bin
-        if (isHovering && hoveredBin !== null) {
-          const bin = bins[hoveredBin];
-          return value >= bin.min && value < bin.max;
-        }
-
-        // Otherwise, use the clicked selection
-        if (selectedBins.length === 0) return false; // No bins selected
-
-        return selectedBins.some((index) => {
-          const bin = bins[index];
-          return value >= bin.min && value < bin.max;
-        });
-      };
-
-      // Draw map
-      svg
-        .selectAll(".country")
-        .data(africaData.features)
-        .enter()
-        .append("path")
-        .attr("class", "country")
-        .attr("d", pathGenerator)
-        .attr("fill", (d) => {
-          const countryData = solarData?.find(
-            (item) => item.country === d?.properties?.name
-          );
-          if (!countryData) return "#222";
-
-          // Apply filter
-          const value = countryData.solar_elec_per_capita;
-          const isSelected = isInSelectedBins(value);
-
-          // If the value is in a selected bin (or the hovered bin if hovering),
-          // show it at full opacity, otherwise show it with reduced opacity
-          return isSelected
-            ? colorScale(value)
-            : rgbToRgba(colorScale(value), 0.1);
-        })
-        .attr("stroke", "#000")
-        .attr("stroke-width", 0.5)
-        .on("mouseover", function (event, d) {
-          const countryData = solarData.find(
-            (item) => item.country === d.properties?.name
-          );
-        })
-        .on("mouseout", function () {
-          d3.select(this).attr("stroke-width", 0.5).attr("stroke", "#000");
-
-          tooltip.style("opacity", 0);
-        });
-    };
-
-    const createChoropleth = async () => {
-      // Clear previous chart if any
-      d3.select(svgRef.current).selectAll("*").remove();
-
-      // Define African country ISO codes
-      const africanCountryCodes = [
-        "DZA",
-        "AGO",
-        "BEN",
-        "BWA",
-        "BFA",
-        "BDI",
-        "CMR",
-        "CPV",
-        "CAF",
-        "TCD",
-        "COM",
-        "COD",
-        "DJI",
-        "EGY",
-        "GNQ",
-        "ERI",
-        "ETH",
-        "GAB",
-        "GMB",
-        "GHA",
-        "GIN",
-        "GNB",
-        "CIV",
-        "KEN",
-        "LSO",
-        "LBR",
-        "LBY",
-        "MDG",
-        "MWI",
-        "MLI",
-        "MRT",
-        "MUS",
-        "MAR",
-        "MOZ",
-        "NAM",
-        "NER",
-        "NGA",
-        "COG",
-        "RWA",
-        "STP",
-        "SEN",
-        "SYC",
-        "SLE",
-        "SOM",
-        "ZAF",
-        "SDS",
-        "SDN",
-        "SWZ",
-        "TZA",
-        "TGO",
-        "TUN",
-        "UGA",
-        "ZMB",
-        "ZWE",
-      ];
-
-      // Get GeoJSON data
-      const response = await fetch(
-        "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson"
-      );
-      const worldData = await response.json();
-      // Filter for African countries only
-      const africaData = {
-        type: "FeatureCollection",
-        features: worldData.features.filter((d) =>
-          africanCountryCodes.includes(d.id)
-        ),
-      };
-
-      // Set up dimensions
-      const width = 1700;
-      const height = 800;
-      const margin = { top: 30, right: 20, bottom: 80, left: 20 }; // Increased bottom margin for legend
-
-      // Create SVG
-      const svg = d3
-        .select(svgRef.current)
-        .attr("viewBox", `0 0 ${width} ${height - 50}`)
-        .append("g")
-        .attr("transform", `translate(${margin.left}, -100)`);
-
-      // Create a tooltip div
-      const tooltip = d3.select(tooltipRef.current);
-
-      // Define color scale
-      const colorScale = solarData
-        ? d3
-            .scaleSequential(d3.interpolateYlOrRd)
-            .domain(
-              d3.extent(solarData, (datum) => datum?.solar_elec_per_capita)
-            )
-        : null; // Assuming max value is 30 KWh
-
-      // Create projection and path generator
-      const projection = d3
-        .geoMercator()
-        .scale(400)
-        .center([15, 5]) // Center on Africa
-        .translate([width / 2, height / 2]);
-
-      const pathGenerator = d3.geoPath().projection(projection);
-
-      // Create interactive legend
-      const legendWidth = 1000;
-      const legendHeight = 25;
-      const legendY = height - margin.bottom;
-
-      const legend = svg
-        .append("g")
-        .attr("class", "legend")
-        .attr(
-          "transform",
-          `translate(${(width - margin.right - legendWidth) / 2}, ${
-            legendY + 80
-          })`
-        );
-
-      // Create legend title
-      legend
-        .append("text")
-        .attr("x", legendWidth / 2)
-        .attr("y", -40)
-        .attr("text-anchor", "middle")
-        .style("font-size", "20px")
-        .style("font-weight", "semi-bold")
-        .text(
-          "Solar Energy Consumption (KWh) - Hover to Filter, Click to Select"
-        );
-
-      // Create the bin rectangles for the interactive legend
-      const binWidth = legendWidth / bins.length;
-
-      legend
-        .selectAll(".legend-bin")
-        .data(bins)
-        .enter()
-        .append("rect")
-        .attr("class", "legend-bin")
-        .attr("x", (d, i) => i * binWidth)
-        .attr("y", -20)
-        .attr("width", binWidth)
-        .attr("height", legendHeight)
-        .attr("fill", (d, i) => {
-          // When hovering, highlight only the hovered bin
-          if (isHovering && hoveredBin !== null) {
-            return hoveredBin === i
-              ? d.color
-              : getColorWithOpacity(d.color, 0.1);
-          }
-          // Otherwise show selected bins
-          return selectedBins.includes(i)
-            ? d.color
-            : getColorWithOpacity(d.color, 0.1);
-        })
-        .attr("stroke", "#333")
-        .attr("stroke-width", 1)
-        .style("cursor", "pointer")
-        .on("mouseenter", (event, d) => {
-          const index = bins.findIndex((bin) => bin.min === d.min);
-          setHoveredBin(index);
-          setIsHovering(true);
-        })
-        .on("mouseleave", () => {
-          setIsHovering(false);
-        })
-        .on("click", (event, d) => {
-          const index = bins.findIndex((bin) => bin.min === d.min);
-          const newSelectedBins = [...selectedBins];
-
-          if (newSelectedBins.includes(index)) {
-            // Remove from selection
-            setSelectedBins(
-              newSelectedBins.filter((binIndex) => binIndex !== index)
-            );
-          } else {
-            // Add to selection
-            setSelectedBins([...newSelectedBins, index]);
-          }
-        });
-
-      // Add legend labels (moved below the bins)
-      legend
-        .selectAll(".legend-label")
-        .data(bins)
-        .enter()
-        .append("text")
-        .attr("class", "legend-label")
-        .attr("x", (d, i) => i * binWidth + binWidth / 2)
-        .attr("y", 25) // Moved below the bins
-        .attr("text-anchor", "middle")
-        .attr("fill", "#000")
-        .style("font-size", "18px")
-        .style("font-weight", "500")
-        .style("cursor", "pointer")
-        .text((d) => d.label);
-
-      // Add title
-
-      {
-        isFullscreen &&
-          svg
-            .append("text")
-            .attr("x", width / 2 - margin.left - margin.right)
-            .attr("y", 110)
-            .attr("text-anchor", "middle")
-            .style("font-size", "20px")
-            .style("font-weight", 500)
-            .text("Solar Energy Consumption Across Africa (KWh)");
-      }
-
-      // Helper function to check if a value is in the selected bins or hover state
-      const isInSelectedBins = (value) => {
-        // If hovering over a bin, only show countries in that bin
-        if (isHovering && hoveredBin !== null) {
-          const bin = bins[hoveredBin];
-          return value >= bin.min && value < bin.max;
-        }
-
-        // Otherwise, use the clicked selection
-        if (selectedBins.length === 0) return false; // No bins selected
-
-        return selectedBins.some((index) => {
-          const bin = bins[index];
-          return value >= bin.min && value < bin.max;
-        });
-      };
-
-      // Draw map
-      svg
-        .selectAll(".country")
-        .data(africaData.features)
-        .enter()
-        .append("path")
-        .attr("class", "country")
-        .attr("d", pathGenerator)
-        .attr("fill", (d) => {
-          const countryData = solarData?.find(
-            (item) => item.country === d?.properties?.name
-          );
-          if (!countryData) return "#222";
-
-          // Apply filter
-          const value = countryData.solar_elec_per_capita;
-          const isSelected = isInSelectedBins(value);
-
-          // If the value is in a selected bin (or the hovered bin if hovering),
-          // show it at full opacity, otherwise show it with reduced opacity
-          return isSelected
-            ? colorScale(value)
-            : rgbToRgba(colorScale(value), 0.1);
-        })
-        .attr("stroke", "#000")
-        .attr("stroke-width", 0.5)
-        .on("mouseover", function (event, d) {
-          const countryData = solarData.find(
-            (item) => item.country === d.properties?.name
-          );
-          // console.log(solarData[0]);
-          // console.log(d);
-          const svgRect =
-            event.currentTarget.ownerSVGElement.getBoundingClientRect();
-          d3.select(this).attr("stroke-width", 1.5).attr("stroke", "#333");
-
-          tooltip
-            .style("opacity", 1)
-            .style("left", `${event.clientX - svgRect.left + 10}px`)
-            .style("top", `${event.clientY - svgRect.top}px`).html(`
-              <strong>${d.properties.name}</strong><br>
-              Solar Energy: ${
-                countryData
-                  ? countryData.solar_elec_per_capita.toFixed(3)
-                  : "No data"
-              } KWh
-            `);
-        })
-        .on("mouseout", function () {
-          d3.select(this).attr("stroke-width", 0.5).attr("stroke", "#000");
-
-          tooltip.style("opacity", 0);
-        });
-    };
-
-    createChoropleth();
-    createHiddenChoropleth();
-  }, [selectedBins, hoveredBin, isHovering, currentYear]); // Re-render when filters or hover state changes
 
   function getColorWithOpacity(hex, opacity) {
     // Remove the leading '#' if present
@@ -771,118 +171,574 @@ export default function AfricaSolarChoropleth({
     }
   };
 
-  // Fullscreen toggle functionality
-  const handleDataFilter = () => {
-    return data?.filter((datum) => datum?.year === currentYear);
-  };
+  // // Fullscreen toggle functionality
+  // const handleDataFilter = () => {
+  //   return data?.filter((datum) => datum?.year === currentYear);
+  // };
 
+  // useEffect(() => {
+  //   setSolarData(handleDataFilter());
+  // }, [data, currentYear]);
+
+  const africanCountryCodes = [
+    "DZA",
+    "AGO",
+    "BEN",
+    "BWA",
+    "BFA",
+    "BDI",
+    "CMR",
+    "CPV",
+    "CAF",
+    "TCD",
+    "COM",
+    "COD",
+    "DJI",
+    "EGY",
+    "GNQ",
+    "ERI",
+    "ETH",
+    "GAB",
+    "GMB",
+    "GHA",
+    "GIN",
+    "GNB",
+    "CIV",
+    "KEN",
+    "LSO",
+    "LBR",
+    "LBY",
+    "MDG",
+    "MWI",
+    "MLI",
+    "MRT",
+    "MUS",
+    "MAR",
+    "MOZ",
+    "NAM",
+    "NER",
+    "NGA",
+    "COG",
+    "RWA",
+    "STP",
+    "SEN",
+    "SYC",
+    "SLE",
+    "SOM",
+    "ZAF",
+    "SDS",
+    "SDN",
+    "SWZ",
+    "TZA",
+    "TGO",
+    "TUN",
+    "UGA",
+    "ZMB",
+    "ZWE",
+  ];
+
+  // Fetch the GeoJSON data
   useEffect(() => {
-    setSolarData(handleDataFilter());
+    // Define African country ISO codes
+
+    const fetchGeoData = async () => {
+      try {
+        const response = await fetch(
+          "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson"
+        );
+        const worldData = await response.json();
+
+        // Filter for African countries only
+        const africaData = {
+          type: "FeatureCollection",
+          features: worldData.features.filter((d) =>
+            africanCountryCodes.includes(d.id)
+          ),
+        };
+
+        setAfricaGeoData(africaData);
+      } catch (error) {
+        console.error("Error fetching geo data:", error);
+      }
+    };
+
+    fetchGeoData();
+  }, []);
+
+  // Filter data based on current year
+  useEffect(() => {
+    const filteredData = data?.filter((datum) => datum?.year === currentYear);
+    setSolarData(filteredData);
   }, [data, currentYear]);
 
-  console.log(isModalOpen);
+  // Helper functions
+  function rgbToRgba(rgbValue, opacity) {
+    const rgbMatch = rgbValue.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+    if (!rgbMatch) return "Invalid RGB value";
+
+    const r = parseInt(rgbMatch[1], 10);
+    const g = parseInt(rgbMatch[2], 10);
+    const b = parseInt(rgbMatch[3], 10);
+
+    if (opacity < 0 || opacity > 1)
+      return "Opacity value must be between 0 and 1";
+
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
+
+  function getColorWithOpacity(hex, opacity) {
+    hex = hex.replace(/^#/, "");
+
+    if (hex.length === 3) {
+      hex = hex
+        .split("")
+        .map((char) => char + char)
+        .join("");
+    }
+
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
+
+  // Function to determine which bin a value belongs to
+  const getBinIndex = (value) => {
+    if (value === null || value === undefined) return 0; // "No data" bin
+
+    // Find which data bin the value belongs to (for bins 1-5)
+    for (let i = 1; i < bins.length; i++) {
+      if (value >= bins[i].min && value < bins[i].max) {
+        return i;
+      }
+    }
+
+    return 0; // Default to "No data" if no match
+  };
+
+  // Function to determine color based on data value
+  const getCountryColor = (countryName) => {
+    if (!solarData) return bins[0].color; // Use "No data" color if no solar data loaded
+
+    const countryData = solarData.find((item) => item.country === countryName);
+
+    // Determine if country has no data
+    if (
+      !countryData ||
+      countryData.solar_elec_per_capita === null ||
+      countryData.solar_elec_per_capita === undefined
+    ) {
+      // Handle No data - check if "No data" bin is selected or being hovered
+      const isSelected = selectedBins.includes(0);
+      const isHovered = isHovering && hoveredBin === 0;
+
+      return isSelected || isHovered
+        ? bins[0].color
+        : getColorWithOpacity(bins[0].color, 0.1);
+    }
+
+    const value = countryData.solar_elec_per_capita;
+    const binIndex = getBinIndex(value);
+
+    // Check if this bin is selected or being hovered
+    const isSelected = isInSelectedBins(value);
+
+    // Return color with appropriate opacity
+    return isSelected
+      ? bins[binIndex].color
+      : getColorWithOpacity(bins[binIndex].color, 0.1);
+  };
+
+  // Check if a value is in the selected bins or hover state
+  const isInSelectedBins = (value) => {
+    // If hovering over a bin, only show countries in that bin
+    if (isHovering && hoveredBin !== null) {
+      const bin = bins[hoveredBin];
+      return value >= bin.min && value < bin.max;
+    }
+
+    // Otherwise, use the clicked selection
+    if (selectedBins.length === 0) return false; // No bins selected
+
+    return selectedBins.some((index) => {
+      const bin = bins[index];
+      return value >= bin.min && value < bin.max;
+    });
+  };
+
+  // Handle map feature hover
+  const handleCountryMouseOver = (event, feature) => {
+    const countryData = solarData?.find(
+      (item) => item.country === feature.properties?.name
+    );
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    const svgRect = svgRef.current.getBoundingClientRect();
+
+    setTooltipInfo({
+      visible: true,
+      x: event.clientX - svgRect.left + 10,
+      y: event.clientY - svgRect.top,
+      country: feature.properties.name,
+      value: countryData
+        ? countryData.solar_elec_per_capita.toFixed(3)
+        : "No data",
+    });
+  };
+
+  const handleCountryMouseOut = () => {
+    setTooltipInfo((prev) => ({ ...prev, visible: false }));
+  };
+
+  // Handle bin interactions
+  const handleBinMouseEnter = (index) => {
+    setHoveredBin(index);
+    setIsHovering(true);
+  };
+
+  const handleBinMouseLeave = () => {
+    setIsHovering(false);
+  };
+
+  const handleBinClick = (index) => {
+    const newSelectedBins = [...selectedBins];
+
+    if (newSelectedBins.includes(index)) {
+      // Remove from selection
+      setSelectedBins(newSelectedBins.filter((binIndex) => binIndex !== index));
+    } else {
+      // Add to selection
+      setSelectedBins([...newSelectedBins, index]);
+    }
+  };
+
+  // D3 projection setup
+  const createProjection = () => {
+    if (!africaGeoData) return null;
+
+    const projection = d3
+      .geoMercator()
+      .scale(400)
+      .center([15, 5])
+      .translate([width / 2, height / 2]);
+
+    const pathGenerator = d3.geoPath().projection(projection);
+
+    return { projection, pathGenerator };
+  };
+
+  const { pathGenerator } = createProjection() || {};
 
   return (
     <div className="relative w-full h-full">
-      {/* Download Modal */}
-      {isModalOpen && (
-        <div className="absolute w-full h-full flex items-start justify-center">
-          <div
-            onClick={() => setIsModalOpen(false)}
-            className="cursor-pointer absolute w-full h-full z-[10] bg-black opacity-40"
-          ></div>
-          <div className="mt-10 rounded-sm w-[80%] h-auto p-4 bg-white z-[20] cursor-pointer">
-            <div className="flex justify-between items-center text-xs font-semibold text-gray-500">
-              <div className="">DOWNLOAD</div>
-              <Icon
-                icon="ic:round-cancel"
-                className="hover:rotate-45 transition-all ease-in-out duration-300"
-                width="24"
-                height="24"
-                onClick={() => setIsModalOpen(false)}
-              />
-            </div>
-            <div className="mt-4 flex items-center gap-1.5 w-full justify-center">
-              <div
-                onClick={() => setActiveDownloadTab("Chart")}
-                className={`${
-                  activeDownloadTab === "Chart" && "bg-gray-300"
-                } flex-1 bg-gray-100 hover:bg-gray-200 text-sm flex items-center justify-center w-fit p-1 gap-1 cursor-pointer`}
+      {/* Hidden chart container */}
+      <div className="fixed top-[-2000%] w-full h-full" ref={chartRef}>
+        <svg
+          viewBox={`0 0 ${width} ${height - 50}`}
+          className={`bg-white ${
+            isFullscreen ? "fixed inset-0 z-50 max-w-none rounded-none" : ""
+          } w-full h-full min-h-[500px]`}
+        >
+          <g transform={`translate(${margin.left}, -100)`}>
+            {/* Title */}(
+            <text
+              x={width / 2 - margin.left - margin.right}
+              y={140}
+              textAnchor="middle"
+              fontSize="20px"
+              fontWeight={500}
+            >
+              Solar Energy Consumption Across Africa (KWh)
+            </text>
+            ){/* Map */}
+            {africaGeoData && pathGenerator && solarData && (
+              <g>
+                {africaGeoData.features.map((feature, i) => (
+                  <path
+                    key={`country-${feature.id || i}`}
+                    d={pathGenerator(feature)}
+                    fill={getCountryColor(feature.properties?.name)}
+                    stroke="#000"
+                    strokeWidth={0.5}
+                    onMouseOver={(e) => handleCountryMouseOver(e, feature)}
+                    onMouseOut={handleCountryMouseOut}
+                    style={{
+                      transition: "fill 0.3s",
+                      cursor: "pointer",
+                    }}
+                  />
+                ))}
+              </g>
+            )}
+            {/* Legend */}
+            <g
+              className="legend"
+              transform={`translate(${
+                (width - margin.right - legendWidth) / 2
+              }, ${legendY + 80})`}
+            >
+              {/* Legend title */}
+              <text
+                x={legendWidth / 2}
+                y={-40}
+                textAnchor="middle"
+                fontSize="20px"
+                fontWeight="semi-bold"
               >
-                <Icon icon={"hugeicons:chart"} className="h-4 w-4" />
-                <span>Chart</span>
-              </div>
-              <div
-                onClick={() => setActiveDownloadTab("Data")}
-                className={`text-sm flex-1 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-sm flex items-center justify-center w-fit p-1 gap-1 cursor-pointer ${
-                  activeDownloadTab === "Data" && "bg-gray-300"
-                }`}
-              >
+                Solar Energy Consumption (KWh) - Hover to Filter, Click to
+                Select
+              </text>
+
+              {/* Legend bins */}
+              {bins.map((bin, i) => (
+                <g key={`bin-${i}`}>
+                  <rect
+                    x={i * binWidth}
+                    y={-20}
+                    width={binWidth}
+                    height={legendHeight}
+                    fill={
+                      isHovering && hoveredBin !== null
+                        ? hoveredBin === i
+                          ? bin.color
+                          : getColorWithOpacity(bin.color, 0.1)
+                        : selectedBins.includes(i)
+                        ? bin.color
+                        : getColorWithOpacity(bin.color, 0.1)
+                    }
+                    stroke="#333"
+                    strokeWidth={1}
+                    style={{ cursor: "pointer" }}
+                    onMouseEnter={() => handleBinMouseEnter(i)}
+                    onMouseLeave={handleBinMouseLeave}
+                    onClick={() => handleBinClick(i)}
+                  />
+                  <text
+                    x={i * binWidth + binWidth / 2}
+                    y={25}
+                    textAnchor="middle"
+                    fill="#000"
+                    fontSize="18px"
+                    fontWeight="500"
+                    style={{ cursor: "pointer" }}
+                  >
+                    {bin.label}
+                  </text>
+                </g>
+              ))}
+            </g>
+          </g>
+        </svg>
+      </div>
+
+      {/* Main visible chart */}
+      <div className="relative w-full h-full" ref={svgRef}>
+        {/* Download Modal */}
+        {isModalOpen && (
+          <div className="absolute w-full h-full flex items-start justify-center">
+            <div
+              onClick={() => setIsModalOpen(false)}
+              className="cursor-pointer absolute w-full h-full z-[10] bg-black opacity-40"
+            ></div>
+            <div className="mt-10 rounded-sm w-[80%] h-auto p-4 bg-white z-[20] cursor-pointer">
+              <div className="flex justify-between items-center text-xs font-semibold text-gray-500">
+                <div className="">DOWNLOAD</div>
                 <Icon
-                  icon={"icon-park-twotone:data-four"}
-                  className="h-4 w-4"
+                  icon="ic:round-cancel"
+                  className="hover:rotate-45 transition-all ease-in-out duration-300"
+                  width="24"
+                  height="24"
+                  onClick={() => setIsModalOpen(false)}
                 />
-                <span>Data</span>
               </div>
+              <div className="mt-4 flex items-center gap-1.5 w-full justify-center">
+                <div
+                  onClick={() => setActiveDownloadTab("Chart")}
+                  className={`${
+                    activeDownloadTab === "Chart" && "bg-gray-300"
+                  } flex-1 bg-gray-100 hover:bg-gray-200 text-sm flex items-center justify-center w-fit p-1 gap-1 cursor-pointer`}
+                >
+                  <Icon icon={"hugeicons:chart"} className="h-4 w-4" />
+                  <span>Chart</span>
+                </div>
+                <div
+                  onClick={() => setActiveDownloadTab("Data")}
+                  className={`text-sm flex-1 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-sm flex items-center justify-center w-fit p-1 gap-1 cursor-pointer ${
+                    activeDownloadTab === "Data" && "bg-gray-300"
+                  }`}
+                >
+                  <Icon
+                    icon={"icon-park-twotone:data-four"}
+                    className="h-4 w-4"
+                  />
+                  <span>Data</span>
+                </div>
+              </div>
+
+              {/* Download options */}
+              {activeDownloadTab === "Chart" && (
+                <div className="mt-4 flex flex-col w-full items-center gap-1.5">
+                  <div
+                    onClick={handleDownload}
+                    className="w-full h-[100px] rounded-sm hover:bg-slate-200 items-center justify-center flex flex-col bg-slate-100"
+                  >
+                    <div className="font-medium text-lg">Image (PNG)</div>
+                    <div className="text-sm">Suitable for most use cases</div>
+                  </div>
+                  <div
+                    onClick={handleSVGDownload}
+                    className="w-full rounded-sm hover:bg-slate-200 items-center h-[100px] justify-center flex flex-col bg-slate-100 cursor-pointer"
+                  >
+                    <div className="font-medium text-lg">
+                      Vector Image (SVG)
+                    </div>
+                    <div className="text-sm">
+                      Scalable format, ideal for editing
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeDownloadTab === "Data" && (
+                <div className="mt-4 flex flex-col w-full items-center gap-1.5">
+                  <div
+                    onClick={handleFullCSVDownload}
+                    className="w-full h-[100px] rounded-sm hover:bg-slate-200 items-center justify-center flex flex-col bg-slate-100 cursor-pointer"
+                  >
+                    <div className="font-medium text-lg">
+                      Complete Dataset (CSV)
+                    </div>
+                    <div className="text-sm text-center">
+                      Download complete data
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-
-            {/* Download options */}
-            {activeDownloadTab === "Chart" && (
-              <div className="mt-4 flex flex-col w-full items-center gap-1.5">
-                <div
-                  onClick={handleDownload}
-                  className="w-full h-[100px] rounded-sm hover:bg-slate-200 items-center justify-center flex flex-col bg-slate-100"
-                >
-                  <div className="font-medium text-lg">Image (PNG)</div>
-                  <div className="text-sm">Suitable for most use cases</div>
-                </div>
-                <div
-                  onClick={handleSVGDownload}
-                  className="w-full rounded-sm hover:bg-slate-200 items-center h-[100px] justify-center flex flex-col bg-slate-100 cursor-pointer"
-                >
-                  <div className="font-medium text-lg">Vector Image (SVG)</div>
-                  <div className="text-sm">
-                    Scalable format, ideal for editing
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeDownloadTab === "Data" && (
-              <div className="mt-4 flex flex-col w-full items-center gap-1.5">
-                <div
-                  onClick={handleFullCSVDownload}
-                  className="w-full h-[100px] rounded-sm hover:bg-slate-200 items-center justify-center flex flex-col bg-slate-100 cursor-pointer"
-                >
-                  <div className="font-medium text-lg">
-                    Complete Dataset (CSV)
-                  </div>
-                  <div className="text-sm text-center">
-                    Download complete data
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Hidden chart  */}
-      <svg
-        ref={chartRef}
-        className="fixed -top-[2000%] w-full h-full min-h-[500px]"
-      />
-      <svg
-        ref={svgRef}
-        className={`bg-white ${
-          isFullscreen ? "fixed inset-0 z-50 max-w-none rounded-none" : ""
-        } w-full h-full min-h-[500px]`}
-      />
-      <div
-        ref={tooltipRef}
-        className="absolute pointer-events-none bg-white p-2 rounded shadow-md opacity-0 border border-gray-300 text-sm"
-        style={{ transition: "opacity 0.3s" }}
-      />
+        <svg
+          ref={svgRef}
+          viewBox={`0 0 ${width} ${height - 50}`}
+          className={`bg-white ${
+            isFullscreen ? "fixed inset-0 z-50 max-w-none rounded-none" : ""
+          } w-full h-full min-h-[500px]`}
+        >
+          <g transform={`translate(${margin.left}, -100)`}>
+            {/* Title */}
+            {isFullscreen && (
+              <text
+                x={width / 2 - margin.left - margin.right}
+                y={100}
+                textAnchor="middle"
+                fontSize="20px"
+                fontWeight={500}
+              >
+                Solar Energy Consumption Across Africa (KWh)
+              </text>
+            )}
+
+            {/* Map */}
+            {africaGeoData && pathGenerator && solarData && (
+              <g>
+                {africaGeoData.features.map((feature, i) => (
+                  <path
+                    key={`country-${feature.id || i}`}
+                    d={pathGenerator(feature)}
+                    fill={getCountryColor(feature.properties?.name)}
+                    stroke="#000"
+                    strokeWidth={0.5}
+                    onMouseOver={(e) => handleCountryMouseOver(e, feature)}
+                    onMouseOut={handleCountryMouseOut}
+                    style={{
+                      transition: "fill 0.3s",
+                      cursor: "pointer",
+                    }}
+                  />
+                ))}
+              </g>
+            )}
+
+            {/* Legend */}
+            <g
+              className="legend"
+              transform={`translate(${
+                (width - margin.right - legendWidth) / 2
+              }, ${legendY + 80})`}
+            >
+              {/* Legend title */}
+              <text
+                x={legendWidth / 2}
+                y={-40}
+                textAnchor="middle"
+                fontSize="20px"
+                fontWeight="semi-bold"
+              >
+                Solar Energy Consumption (KWh) - Hover to Filter, Click to
+                Select
+              </text>
+
+              {/* Legend bins */}
+              {bins.map((bin, i) => (
+                <g key={`bin-${i}`}>
+                  <rect
+                    x={i * binWidth}
+                    y={-20}
+                    width={binWidth}
+                    height={legendHeight}
+                    fill={
+                      isHovering && hoveredBin !== null
+                        ? hoveredBin === i
+                          ? bin.color
+                          : getColorWithOpacity(bin.color, 0.1)
+                        : selectedBins.includes(i)
+                        ? bin.color
+                        : getColorWithOpacity(bin.color, 0.1)
+                    }
+                    stroke="#333"
+                    strokeWidth={1}
+                    style={{ cursor: "pointer" }}
+                    onMouseEnter={() => handleBinMouseEnter(i)}
+                    onMouseLeave={handleBinMouseLeave}
+                    onClick={() => handleBinClick(i)}
+                  />
+                  <text
+                    x={i * binWidth + binWidth / 2}
+                    y={25}
+                    textAnchor="middle"
+                    fill="#000"
+                    fontSize="18px"
+                    fontWeight="500"
+                    style={{ cursor: "pointer" }}
+                  >
+                    {bin.label}
+                  </text>
+                </g>
+              ))}
+            </g>
+          </g>
+        </svg>
+
+        {/* Tooltip */}
+        <div
+          ref={tooltipRef}
+          className="absolute pointer-events-none bg-white p-2 rounded shadow-md border border-gray-300 text-sm"
+          style={{
+            opacity: tooltipInfo.visible ? 1 : 0,
+            left: `${tooltipInfo.x}px`,
+            top: `${tooltipInfo.y}px`,
+            transition: "opacity 0.3s",
+          }}
+        >
+          <strong>{tooltipInfo.country}</strong>
+          <br />
+          Solar Energy: {tooltipInfo.value}{" "}
+          {tooltipInfo.value !== "No data" && "KWh"}
+        </div>
+      </div>
+
       {/* Range */}
       <div className="w-[80%] mx-auto flex items-center">
         <Range
