@@ -440,7 +440,7 @@ export default function AfricaSolarSurge() {
             <div className="bg-white h-fit p-6 rounded-lg shadow-md mb-8">
               <div className="mb-2 flex h-fit items-center ">
                 <h3 className="flex-1  text-xl font-semibold mb-4">
-                  Solar Consumption Growth
+                  Solar Energy Consumption Across Africa
                 </h3>
                 {/* RHS - Action buttons */}
                 <div className="w-fit h-8 flex justify-center gap-2 ">
@@ -519,52 +519,17 @@ export default function AfricaSolarSurge() {
                     data={adoptionData}
                     isModalOpen={isChoroplethModalOpen}
                     setIsModalOpen={setIsChoroplethModalOpen}
+                    screenSize={screenSize}
+                    setScreenSize={setScreenSize}
                   />
                 </div>
               </div>
               <p className="mt-4 text-gray-700">
-                This chart illustrates the dramatic increase in solar energy
-                consumption across Africa, showing both year-over-year changes
-                and the overall growth trend.
+                This choropleth map highlights disparities in solar electricity
+                generation per capita across Africa. Countries like Namibia,
+                South Africa, and Egypt show relatively high adoption, while
+                others are still in early stages of development.
               </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6 mb-8">
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold mb-4">
-                  Annual Growth Rate
-                </h3>
-                <div className="bg-gray-100 h-64 flex items-center justify-center rounded-lg border border-gray-200">
-                  <div className="text-center text-gray-500">
-                    <BarChartIcon className="h-12 w-12 mx-auto mb-2" />
-                    <p className="text-sm font-medium">
-                      Bar Chart: Solar Energy Annual Growth Rate (%)
-                    </p>
-                  </div>
-                </div>
-                <p className="mt-4 text-gray-700">
-                  Year-by-year percentage growth in solar energy consumption,
-                  highlighting acceleration periods.
-                </p>
-              </div>
-
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold mb-4">
-                  Per Capita Solar Electricity
-                </h3>
-                <div className="bg-gray-100 h-64 flex items-center justify-center rounded-lg border border-gray-200">
-                  <div className="text-center text-gray-500">
-                    <TrendingUp className="h-12 w-12 mx-auto mb-2" />
-                    <p className="text-sm font-medium">
-                      Line Chart: Solar Electricity Per Capita
-                    </p>
-                  </div>
-                </div>
-                <p className="mt-4 text-gray-700">
-                  This chart shows how solar electricity generation per person
-                  has changed over time across Africa.
-                </p>
-              </div>
             </div>
           </section>
         )}

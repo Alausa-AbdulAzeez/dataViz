@@ -12,6 +12,8 @@ export default function AfricaSolarChoropleth({
   setIsModalOpen,
 }) {
   const tooltipRef = useRef(null);
+  const containerRef = useRef(null);
+
   const chartRef = useRef(null);
 
   const [solarData, setSolarData] = useState(null);
@@ -31,15 +33,20 @@ export default function AfricaSolarChoropleth({
   const [hoveredBin, setHoveredBin] = useState(null);
   const [isHovering, setIsHovering] = useState(false);
   const [selectedBins, setSelectedBins] = useState([]);
+  // Responsive state
+  const [dimensions, setDimensions] = useState({
+    width: 1700,
+    height: 800,
+  });
 
   // Define bin ranges for our filter categories
   const bins = [
-    { min: null, max: null, label: "No data", color: "#CCCCCC" }, // No data bin with gray color
-    { min: 0, max: 52, label: "0 – 52 kWh", color: "#fff5eb" },
-    { min: 52, max: 104, label: "52 – 104 kWh", color: "#fed8a6" },
-    { min: 104, max: 156, label: "104 – 156 kWh", color: "#fd9243" },
-    { min: 156, max: 208, label: "156 – 208 kWh", color: "#f05b23" },
-    { min: 208, max: 260, label: "208 – 260 kWh", color: "#bd2e1e" },
+    { min: null, max: null, label: "No data", color: "#CCCCCC" },
+    { min: 0, max: 10, label: "0 – 10", color: "#fff5eb" },
+    { min: 10, max: 30, label: "10 – 30", color: "#fdd0a2" },
+    { min: 30, max: 100, label: "30 – 100", color: "#fdae6b" },
+    { min: 100, max: 200, label: "100 – 200", color: "#fd8d3c" },
+    { min: 200, max: 260, label: "200 – 260", color: "#d94801" },
   ];
 
   // Define dimensions
@@ -430,12 +437,55 @@ export default function AfricaSolarChoropleth({
 
   const { pathGenerator } = createProjection() || {};
 
+  useEffect(() => {
+    function handleResize() {
+      if (containerRef.current) {
+        const { width: containerWidth } =
+          containerRef.current.getBoundingClientRect();
+
+        // Calculate appropriate height based on width to maintain aspect ratio
+        const aspectRatio = 0.6; // height/width ratio
+        const calculatedHeight = containerWidth * aspectRatio;
+
+        setDimensions({
+          width: containerWidth,
+          height: calculatedHeight,
+        });
+      }
+    }
+
+    // Set initial dimensions
+    handleResize();
+
+    // Add resize listener
+    window.addEventListener("resize", handleResize);
+
+    // Clean up
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Dynamic font sizes based on viewport
+  const getFontSize = (baseFontSize) => {
+    const minScreenWidth = 320;
+    const maxScreenWidth = 1700;
+    const minFontSize = baseFontSize * 0.6;
+
+    if (dimensions.width <= minScreenWidth) return `${minFontSize}px`;
+    if (dimensions.width >= maxScreenWidth) return `${baseFontSize}px`;
+
+    // Linear scaling between min and max
+    const scale =
+      (dimensions.width - minScreenWidth) / (maxScreenWidth - minScreenWidth);
+    const fontSize = minFontSize + scale * (baseFontSize - minFontSize);
+
+    return `${fontSize}px`;
+  };
+
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full pb-2">
       {/* Hidden chart container */}
       <div className="fixed top-[-2000%] w-full h-full" ref={chartRef}>
         <svg
-          viewBox={`0 0 ${width} ${height - 50}`}
           className={`bg-white ${
             isFullscreen ? "fixed inset-0 z-50 max-w-none rounded-none" : ""
           } w-full h-full min-h-[500px]`}
@@ -446,7 +496,7 @@ export default function AfricaSolarChoropleth({
               x={width / 2 - margin.left - margin.right}
               y={140}
               textAnchor="middle"
-              fontSize="20px"
+              fontSize={getFontSize(20)}
               fontWeight={500}
             >
               Solar Energy Consumption Across Africa (KWh)
@@ -483,7 +533,7 @@ export default function AfricaSolarChoropleth({
                 x={legendWidth / 2}
                 y={-40}
                 textAnchor="middle"
-                fontSize="20px"
+                fontSize={getFontSize(20)}
                 fontWeight="semi-bold"
               >
                 Solar Energy Consumption (KWh) - Hover to Filter, Click to
@@ -519,7 +569,7 @@ export default function AfricaSolarChoropleth({
                     y={25}
                     textAnchor="middle"
                     fill="#000"
-                    fontSize="18px"
+                    fontSize={getFontSize(18)}
                     fontWeight="500"
                     style={{ cursor: "pointer" }}
                   >
@@ -621,7 +671,7 @@ export default function AfricaSolarChoropleth({
 
         <svg
           ref={svgRef}
-          viewBox={`0 0 ${width} ${height - 50}`}
+          viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
           className={`bg-white ${
             isFullscreen ? "fixed inset-0 z-50 max-w-none rounded-none" : ""
           } w-full h-full min-h-[500px]`}
@@ -633,7 +683,7 @@ export default function AfricaSolarChoropleth({
                 x={width / 2 - margin.left - margin.right}
                 y={100}
                 textAnchor="middle"
-                fontSize="20px"
+                fontSize={getFontSize(20)}
                 fontWeight={500}
               >
                 Solar Energy Consumption Across Africa (KWh)
@@ -673,7 +723,7 @@ export default function AfricaSolarChoropleth({
                 x={legendWidth / 2}
                 y={-40}
                 textAnchor="middle"
-                fontSize="20px"
+                fontSize={getFontSize(20)}
                 fontWeight="semi-bold"
               >
                 Solar Energy Consumption (KWh) - Hover to Filter, Click to
@@ -709,7 +759,7 @@ export default function AfricaSolarChoropleth({
                     y={25}
                     textAnchor="middle"
                     fill="#000"
-                    fontSize="18px"
+                    fontSize={getFontSize(20)}
                     fontWeight="500"
                     style={{ cursor: "pointer" }}
                   >
