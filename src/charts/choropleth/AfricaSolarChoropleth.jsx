@@ -551,7 +551,7 @@ export default function AfricaSolarChoropleth({
   };
 
   return (
-    <div className="relative w-full h-full pb-2">
+    <div className="relative w-full h-full pb-2 ">
       {/* Hidden chart container */}
       <div className="fixed top-[-2000%] w-full h-full" ref={chartRef}>
         <svg
@@ -568,7 +568,8 @@ export default function AfricaSolarChoropleth({
               fontSize={getFontSize(20)}
               fontWeight={500}
             >
-              Solar Energy Consumption Across Africa (KWh)
+              Solar Electricity Generation per Capita (kWh) Across African
+              Nations
             </text>
             ){/* Map */}
             {africaGeoData && pathGenerator && solarData && (
@@ -605,8 +606,8 @@ export default function AfricaSolarChoropleth({
                 fontSize={getFontSize(20)}
                 fontWeight="semi-bold"
               >
-                Solar Energy Consumption (KWh) - Hover to Filter, Click to
-                Select
+                Solar Electricity Generation per Capita (kWh) - Hover to Filter,
+                Click to Toggle
               </text>
 
               {/* Legend bins */}
@@ -652,7 +653,7 @@ export default function AfricaSolarChoropleth({
       </div>
 
       {/* Main visible chart */}
-      <div className="relative w-full h-full" ref={svgRef}>
+      <div className="relative w-full h-full bg-white " ref={svgRef}>
         {/* Download Modal */}
         {isModalOpen && (
           <div className="absolute w-full h-full flex items-start justify-center">
@@ -750,12 +751,15 @@ export default function AfricaSolarChoropleth({
             {isFullscreen && (
               <text
                 x={width / 2 - margin.left - margin.right}
-                y={100}
+                y={
+                  currentWidth < 600 ? "-30%" : currentWidth < 900 ? "-10%" : 80
+                }
                 textAnchor="middle"
                 fontSize={getFontSize(20)}
                 fontWeight={500}
               >
-                Solar Energy Consumption Across Africa (KWh)
+                Solar Electricity Generation per Capita (kWh) Across African
+                Nations
               </text>
             )}
 
@@ -795,8 +799,8 @@ export default function AfricaSolarChoropleth({
                 fontSize={getFontSize(20)}
                 fontWeight="semi-bold"
               >
-                Solar Energy Consumption (KWh) - Hover to Filter, Click to
-                Select
+                Solar Electricity Generation per Capita (kWh) - Hover to Filter,
+                Click to Toggle
               </text>
 
               {/* Legend bins */}

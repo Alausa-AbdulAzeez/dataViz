@@ -48,7 +48,7 @@ export default function AfricaSolarSurge() {
           d["solar_electricity"] = +d.solar_electricity;
           d["solar_consumption"] = +d.solar_consumption;
           d["solar_elec_per_capita"] = +d.solar_elec_per_capita;
-          d["year"] = +d.year;
+          d["year"] = +d?.year;
           return d;
         }
       });
@@ -56,7 +56,7 @@ export default function AfricaSolarSurge() {
         d["solar_electricity"] = +d.solar_electricity;
         d["solar_consumption"] = +d.solar_consumption;
         d["solar_elec_per_capita"] = +d.solar_elec_per_capita;
-        d["year"] = +d.year;
+        d["year"] = +d?.year;
         return d;
       });
 
@@ -277,10 +277,10 @@ export default function AfricaSolarSurge() {
               development and improving living standards across Africa. Solar
               energy has emerged as a transformative solution to address the
               continent's energy challenges, with electricity generation from
-              solar growing from a mere 0.01 terawatt-hours in 2000 to an
-              impressive 27.14 terawatt-hours by 2023. This remarkable 271,300%
-              increase represents one of the fastest growth rates for any energy
-              source on the continent.
+              solar growing from a mere <b>0.01 TWh</b> in 2000 to an impressive{" "}
+              <b>27.14 TWh</b> by 2023. This remarkable
+              <b>271,300%</b> increase represents one of the fastest growth
+              rates for any energy source on the continent.
             </p>
 
             <div className="grid md:grid-cols-3 gap-6 mb-8">
@@ -324,7 +324,7 @@ export default function AfricaSolarSurge() {
 
             <div className="bg-white p-6 rounded-lg shadow-md mb-8">
               <div className="mb-2 flex h-fit items-center gap-3">
-                <h3 className="text-xl font-semibold flex-1">
+                <h3 className="text-sm md:text-xl font-semibold flex-1">
                   Solar Generation Growth in Africa (2000-2023)
                 </h3>
                 {/* RHS - Action buttons */}
@@ -419,10 +419,12 @@ export default function AfricaSolarSurge() {
                   />
                 )}
               </div>
-              <p className="mt-4 text-gray-700">
+
+              <p className="text-xs md:text-base mt-4 text-gray-700">
                 This chart illustrates Africa's remarkable solar energy journey,
-                with electricity generation growing from just 0.01 TWh in 2000
-                to 27.14 TWh by 2023 — a 271,300% increase over two decades.
+                with electricity generation growing from just <b>0.01 TWh</b> in
+                2000 to <b>27.14 TWh</b> by 2023 — a <b>271,300%</b> increase
+                over two decades.
               </p>
             </div>
           </section>
@@ -430,17 +432,23 @@ export default function AfricaSolarSurge() {
 
         {activeTab === "adoption" && (
           <section>
-            <h2 className="text-3xl font-bold mb-6">Solar Adoption Trends</h2>
+            <h2 className="text-3xl font-bold mb-6">
+              Solar Power Divide: Mapping Africa's Renewable Energy Landscape
+            </h2>
             <p className="text-gray-700 mb-6">
-              Solar energy adoption across Africa has seen remarkable growth,
-              driven by decreasing technology costs, supportive policies, and
-              increasing recognition of climate change challenges.
+              Despite the region's abundant sunshine, solar adoption varies
+              dramatically between countries due to differences in
+              infrastructure investment, policy frameworks, and economic
+              development. Understanding these patterns is crucial for
+              addressing energy inequities and accelerating the continent's
+              renewable energy transition.
             </p>
 
             <div className="bg-white h-fit p-6 rounded-lg shadow-md mb-8">
               <div className="mb-2 flex h-fit items-center gap-3 ">
                 <h3 className="flex-1  text-xl font-semibold mb-4">
-                  Solar Energy Consumption Across Africa
+                  Solar Electricity Generation per Capita (kWh) Across African
+                  Nations
                 </h3>
                 {/* RHS - Action buttons */}
                 <div className="w-fit h-8 flex justify-center gap-2 ">
@@ -511,24 +519,33 @@ export default function AfricaSolarSurge() {
                 </div>
               </div>
               <div className="bg-white max-h-[900px] flex items-center justify-center rounded-lg border border-gray-200">
-                <div className="text-center  h-full">
-                  {/* Choropleth map */}
-                  <AfricaSolarChoropleth
-                    isFullscreen={isFullscreen}
-                    svgRef={svgRef}
-                    data={adoptionData}
-                    isModalOpen={isChoroplethModalOpen}
-                    setIsModalOpen={setIsChoroplethModalOpen}
-                    screenSize={screenSize}
-                    setScreenSize={setScreenSize}
-                  />
-                </div>
+                {/* Loading state */}
+                {loading ? (
+                  <div className="w-full flex justify-center items-center py-20">
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-yellow-500"></div>
+                  </div>
+                ) : (
+                  <div className="text-center  h-full">
+                    {/* Choropleth map */}
+                    <AfricaSolarChoropleth
+                      isFullscreen={isFullscreen}
+                      svgRef={svgRef}
+                      data={adoptionData}
+                      isModalOpen={isChoroplethModalOpen}
+                      setIsModalOpen={setIsChoroplethModalOpen}
+                      screenSize={screenSize}
+                      setScreenSize={setScreenSize}
+                    />
+                  </div>
+                )}
               </div>
               <p className="mt-4 text-gray-700">
-                This choropleth map highlights disparities in solar electricity
-                generation per capita across Africa. Countries like Namibia,
-                South Africa, and Egypt show relatively high adoption, while
-                others are still in early stages of development.
+                Countries like <b>Namibia</b>, <b>South Africa</b>, and{" "}
+                <b>Egypt</b> are leading in solar electricity generation per
+                capita, while many others remain in the early stages of
+                development. These differences reflect broader issues in energy
+                access, investment priorities, and regional capacity to harness
+                renewable resources.
               </p>
             </div>
           </section>

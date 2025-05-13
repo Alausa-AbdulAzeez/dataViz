@@ -217,16 +217,7 @@ const SolarShare = ({
             fontWeight="bold"
             fill={THEME.textColor}
           >
-            Global Solar Electricity Generation
-          </text>
-          <text
-            x={margins.left}
-            y={36}
-            fontSize={12}
-            fill={THEME.textColor}
-            opacity="0.7"
-          >
-            Percentage of total electricity production
+            Solar Generation Growth in Africa (2000-2023)
           </text>
 
           <g transform={`translate(${margins.left}, ${margins.top + 5})`}>
@@ -507,22 +498,14 @@ const SolarShare = ({
           {isFullscreen && (
             <g transform={`translate(0, -5)`}>
               <text
-                x={margins.left}
+                x={screenSize === "small" ? 5 : margins.left}
                 y={20}
-                fontSize={16}
+                fontSize={screenSize === "small" ? 12 : 16}
                 fontWeight="bold"
                 fill={THEME.textColor}
+                className="text-wrap"
               >
-                Global Solar Electricity Generation
-              </text>
-              <text
-                x={margins.left}
-                y={36}
-                fontSize={12}
-                fill={THEME.textColor}
-                opacity="0.7"
-              >
-                Percentage of total electricity production
+                Solar Generation Growth in Africa (2000-2023)
               </text>
             </g>
           )}
@@ -611,14 +594,22 @@ const SolarShare = ({
                 <circle
                   cx={xScale(datum.year)}
                   cy={yScale(datum.solar_electricity)}
-                  r={selectedPoint === datum ? 6 : 4}
+                  r={
+                    selectedPoint === datum
+                      ? screenSize === "small"
+                        ? 1.5
+                        : 4
+                      : screenSize === "small"
+                      ? 3
+                      : 6
+                  }
                   fill={
                     selectedPoint === datum
                       ? THEME.accentColor
                       : THEME.primaryColor
                   }
                   stroke={THEME.backgroundColor}
-                  strokeWidth={2}
+                  strokeWidth={screenSize === "small" ? 1 : 4}
                   onMouseEnter={() => handlePointHover(datum)}
                   onMouseLeave={handlePointLeave}
                   style={{ cursor: "pointer", transition: "r 0.2s" }}
@@ -630,21 +621,20 @@ const SolarShare = ({
             {selectedPoint && (
               <g style={{ pointerEvents: "none" }}>
                 <rect
-                  x={xScale(selectedPoint.year) - 50}
+                  x={xScale(selectedPoint.year) - 70}
                   y={yScale(selectedPoint.solar_electricity) - 40}
-                  width={100}
+                  width={110}
                   height={30}
                   rx={4}
                   fill={THEME.backgroundColor}
-                  stroke={THEME.borderColor}
                   filter="url(#dropShadow)"
                 />
                 <text
-                  x={xScale(selectedPoint.year)}
+                  x={xScale(selectedPoint.year) - 15}
                   y={yScale(selectedPoint.solar_electricity) - 20}
                   textAnchor="middle"
                   fontSize={12}
-                  fontWeight="bold"
+                  fontWeight="500"
                   fill={THEME.textColor}
                 >
                   {selectedPoint.year}: {selectedPoint.solar_electricity} TWh
