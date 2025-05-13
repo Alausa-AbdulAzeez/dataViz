@@ -323,8 +323,8 @@ export default function AfricaSolarSurge() {
             </div>
 
             <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-              <div className="mb-2 flex h-fit items-center ">
-                <h3 className="text-xl font-semibold flex-1 ">
+              <div className="mb-2 flex h-fit items-center gap-3">
+                <h3 className="text-xl font-semibold flex-1">
                   Solar Generation Growth in Africa (2000-2023)
                 </h3>
                 {/* RHS - Action buttons */}
@@ -438,7 +438,7 @@ export default function AfricaSolarSurge() {
             </p>
 
             <div className="bg-white h-fit p-6 rounded-lg shadow-md mb-8">
-              <div className="mb-2 flex h-fit items-center ">
+              <div className="mb-2 flex h-fit items-center gap-3 ">
                 <h3 className="flex-1  text-xl font-semibold mb-4">
                   Solar Energy Consumption Across Africa
                 </h3>

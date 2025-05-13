@@ -18,6 +18,7 @@ export default function AfricaSolarChoropleth({
 
   const [solarData, setSolarData] = useState(null);
   const [africaGeoData, setAfricaGeoData] = useState(null);
+
   const [currentYear, setCurrentYear] = useState(2023);
   const [years, setYears] = useState({ min: 2000, max: 2023 });
   const [tooltipInfo, setTooltipInfo] = useState({
@@ -38,6 +39,7 @@ export default function AfricaSolarChoropleth({
     width: 1700,
     height: 800,
   });
+  const [currentWidth, SetCurrentWidth] = useState(1700);
 
   // Define bin ranges for our filter categories
   const bins = [
@@ -424,9 +426,27 @@ export default function AfricaSolarChoropleth({
   const createProjection = () => {
     if (!africaGeoData) return null;
 
+    // Calculate dynamic scale based on current dimensions
+    const getScaleForWidth = (width) => {
+      const minScreenWidth = 320; // Typical mobile
+      const maxScreenWidth = 1024; // Typical large desktop
+
+      const minScale = 1000; // For mobile (smaller width → larger scale to zoom in)
+      const maxScale = 400; // For desktop (larger width → smaller scale)
+
+      if (width <= minScreenWidth) return minScale;
+      if (width >= maxScreenWidth) return maxScale;
+
+      // Linear interpolation
+      const t = (width - minScreenWidth) / (maxScreenWidth - minScreenWidth);
+      return minScale + t * (maxScale - minScale); // interpolated scale
+    };
+
+    // Calculate center position adjustments (optional)
+
     const projection = d3
       .geoMercator()
-      .scale(400)
+      .scale(getScaleForWidth(currentWidth))
       .center([15, 5])
       .translate([width / 2, height / 2]);
 
@@ -435,34 +455,83 @@ export default function AfricaSolarChoropleth({
     return { projection, pathGenerator };
   };
 
-  const { pathGenerator } = createProjection() || {};
+  // Add this function to calculate the legend's Y position
+  const getLegendYPosition = (screenWidth) => {
+    const baseY = legendY + 80; // Your current position
 
-  useEffect(() => {
-    function handleResize() {
-      if (containerRef.current) {
-        const { width: containerWidth } =
-          containerRef.current.getBoundingClientRect();
-
-        // Calculate appropriate height based on width to maintain aspect ratio
-        const aspectRatio = 0.6; // height/width ratio
-        const calculatedHeight = containerWidth * aspectRatio;
-
-        setDimensions({
-          width: containerWidth,
-          height: calculatedHeight,
-        });
-      }
+    // For screens smaller than 1000px, we need to push the legend down
+    if (screenWidth <= 460) {
+      // Calculate additional offset based on screen width
+      // More offset as screen gets smaller
+      const additionalOffset =
+        Math.max(0, ((1000 - screenWidth) / 1000) * 100) + 400;
+      return baseY + additionalOffset;
+    }
+    if (screenWidth <= 600) {
+      // Calculate additional offset based on screen width
+      // More offset as screen gets smaller
+      const additionalOffset =
+        Math.max(0, ((1000 - screenWidth) / 1000) * 100) + 270;
+      console.log(additionalOffset);
+      return baseY + additionalOffset;
+    }
+    if (screenWidth <= 660) {
+      // Calculate additional offset based on screen width
+      // More offset as screen gets smaller
+      const additionalOffset =
+        Math.max(0, ((1000 - screenWidth) / 1000) * 100) + 200;
+      console.log(additionalOffset);
+      return baseY + additionalOffset;
+    }
+    if (screenWidth <= 730) {
+      // Calculate additional offset based on screen width
+      // More offset as screen gets smaller
+      const additionalOffset =
+        Math.max(0, ((1000 - screenWidth) / 1000) * 100) + 150;
+      console.log(additionalOffset);
+      return baseY + additionalOffset;
+    }
+    if (screenWidth <= 800) {
+      // Calculate additional offset based on screen width
+      // More offset as screen gets smaller
+      const additionalOffset =
+        Math.max(0, ((1000 - screenWidth) / 1000) * 100) + 120;
+      console.log(additionalOffset);
+      return baseY + additionalOffset;
+    }
+    if (screenWidth <= 970) {
+      // Calculate additional offset based on screen width
+      // More offset as screen gets smaller
+      const additionalOffset =
+        Math.max(0, ((1000 - screenWidth) / 1000) * 100) + 120;
+      console.log(additionalOffset);
+      return baseY + additionalOffset;
     }
 
-    // Set initial dimensions
-    handleResize();
+    return baseY; // Default position for larger screens
+  };
 
-    // Add resize listener
+  // Effect to handle resize events
+  useEffect(() => {
+    // Handler to call on window resize
+    function handleResize() {
+      // Update dimensions
+      SetCurrentWidth(window.innerWidth);
+    }
+
+    // Add event listener
     window.addEventListener("resize", handleResize);
 
-    // Clean up
+    console.log(window.innerWidth);
+
+    // Call handler right away to update dimensions on first render
+    handleResize();
+
+    // Remove event listener on cleanup
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, []); // Empty array ensures that effect is only run on mount and unmount
+
+  const { pathGenerator } = createProjection() || {};
 
   // Dynamic font sizes based on viewport
   const getFontSize = (baseFontSize) => {
@@ -674,7 +743,7 @@ export default function AfricaSolarChoropleth({
           viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
           className={`bg-white ${
             isFullscreen ? "fixed inset-0 z-50 max-w-none rounded-none" : ""
-          } w-full h-full min-h-[500px]`}
+          } w-full md:h-full h-[400px] md:min-h-[500px]`}
         >
           <g transform={`translate(${margin.left}, -100)`}>
             {/* Title */}
@@ -716,7 +785,7 @@ export default function AfricaSolarChoropleth({
               className="legend"
               transform={`translate(${
                 (width - margin.right - legendWidth) / 2
-              }, ${legendY + 80})`}
+              }, ${getLegendYPosition(currentWidth)})`}
             >
               {/* Legend title */}
               <text
