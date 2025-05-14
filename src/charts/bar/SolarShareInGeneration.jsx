@@ -4,12 +4,9 @@ import { Icon } from "@iconify/react";
 
 import html2canvas from "html2canvas";
 
-const SolarShare = ({
+const SolarShareInGeneration = ({
   data,
-  toggleFullscreen,
   isFullscreen,
-  iconTooltip,
-  setIconTooltip,
   chartContainerRef,
   isModalOpen,
   setIsModalOpen,
@@ -85,13 +82,13 @@ const SolarShare = ({
       const svgBlob = new Blob([svgData], {
         type: "image/svg+xml;charset=utf-8",
       });
-      saveAs(svgBlob, `population-chart-${new Date().getTime()}.svg`);
+      saveAs(svgBlob, `chart-${new Date().getTime()}.svg`);
     } else if (type === "CSV") {
       const { currentYear, data } = ref;
-      let csvContent = "Country,Date,solar_electricity\n";
+      let csvContent = "Country,Date,solar_share_elec\n";
 
       data.forEach((item) => {
-        csvContent += `${item.country},${item.year},${item.solar_electricity}\n`;
+        csvContent += `${item.country},${item.year},${item.solar_share_elec}\n`;
       });
 
       const csvBlob = new Blob([csvContent], {
@@ -102,10 +99,10 @@ const SolarShare = ({
       const { data } = ref;
       const years = Object.keys(data[0]).filter((key) => !isNaN(parseInt(key)));
 
-      let csvContent = "country,year,solar_electricity" + "\n";
+      let csvContent = "country,year,solar_share_elec" + "\n";
 
       data.forEach((item) => {
-        csvContent += `${item.country},${item.year},${item.solar_electricity}`;
+        csvContent += `${item.country},${item.year},${item.solar_share_elec}`;
         csvContent += "\n";
       });
 
@@ -123,19 +120,19 @@ const SolarShare = ({
 
   // Y-scale
   const yScale = scaleLinear()
-    .domain([0, Math.max(...data.map((d) => d.solar_electricity)) * 1.1]) // Add 10% padding at the top
+    .domain([0, Math.max(...data.map((d) => d.solar_share_elec)) * 1.1]) // Add 10% padding at the top
     .range([innerHeight, 0])
     .nice();
 
   // Create line generator
   const lineGenerator = line()
     .x((d) => xScale(d.year))
-    .y((d) => yScale(d.solar_electricity))
+    .y((d) => yScale(d.solar_share_elec))
     .curve(curveMonotoneX);
 
   // Create area generator for the gradient fill
   const areaPath = `
-    M ${xScale(data[0].year)} ${yScale(data[0].solar_electricity)}
+    M ${xScale(data[0].year)} ${yScale(data[0].solar_share_elec)}
     ${lineGenerator(data).slice(1)}
     L ${xScale(data[data.length - 1].year)} ${innerHeight}
     L ${xScale(data[0].year)} ${innerHeight}
@@ -143,10 +140,19 @@ const SolarShare = ({
   `;
 
   const handlePointHover = (point) => {
-    setSelectedPoint(point);
+    if (
+      point?.country === selectedPoint?.country &&
+      point.year === selectedPoint?.year &&
+      point.solar_share_elec === selectedPoint?.solar_share_elec
+    ) {
+      return;
+    } else {
+      setSelectedPoint(point);
+    }
   };
 
   const handlePointLeave = () => {
+    console.log("left");
     setSelectedPoint(null);
   };
 
@@ -303,7 +309,7 @@ const SolarShare = ({
               <g key={datum.year}>
                 <circle
                   cx={xScale(datum.year)}
-                  cy={yScale(datum.solar_electricity)}
+                  cy={yScale(datum.solar_share_elec)}
                   r={selectedPoint === datum ? 6 : 4}
                   fill={
                     selectedPoint === datum
@@ -324,7 +330,7 @@ const SolarShare = ({
               <g>
                 <rect
                   x={xScale(selectedPoint.year) - 50}
-                  y={yScale(selectedPoint.solar_electricity) - 40}
+                  y={yScale(selectedPoint.solar_share_elec) - 40}
                   width={100}
                   height={30}
                   rx={4}
@@ -334,13 +340,13 @@ const SolarShare = ({
                 />
                 <text
                   x={xScale(selectedPoint.year)}
-                  y={yScale(selectedPoint.solar_electricity) - 20}
+                  y={yScale(selectedPoint.solar_share_elec) - 20}
                   textAnchor="middle"
                   fontSize={12}
                   fontWeight="bold"
                   fill={THEME.textColor}
                 >
-                  {selectedPoint.year}: {selectedPoint.solar_electricity}%
+                  {selectedPoint.year}: {selectedPoint.solar_share_elec}%
                 </text>
               </g>
             )}
@@ -365,7 +371,7 @@ const SolarShare = ({
               fontSize={14}
               fill={THEME.textColor}
             >
-              Solar Generation Growth (TWh)
+              Solar Generation Growth (%)
             </text>
           </g>
         </svg>
@@ -594,7 +600,7 @@ const SolarShare = ({
                 {/* Invisible hitbox circle */}
                 <circle
                   cx={xScale(datum.year)}
-                  cy={yScale(datum.solar_electricity)}
+                  cy={yScale(datum.solar_share_elec)}
                   r={10} // Larger hit area
                   fill="transparent"
                   onMouseEnter={() => handlePointHover(datum)}
@@ -604,7 +610,7 @@ const SolarShare = ({
                 {/* Visible circle */}
                 <circle
                   cx={xScale(datum.year)}
-                  cy={yScale(datum.solar_electricity)}
+                  cy={yScale(datum.solar_share_elec)}
                   r={
                     selectedPoint === datum
                       ? screenSize === "small"
@@ -632,7 +638,7 @@ const SolarShare = ({
               <g style={{ pointerEvents: "none" }}>
                 <rect
                   x={xScale(selectedPoint.year) - 70}
-                  y={yScale(selectedPoint.solar_electricity) - 40}
+                  y={yScale(selectedPoint.solar_share_elec) - 40}
                   width={110}
                   height={30}
                   rx={4}
@@ -641,13 +647,14 @@ const SolarShare = ({
                 />
                 <text
                   x={xScale(selectedPoint.year) - 15}
-                  y={yScale(selectedPoint.solar_electricity) - 20}
+                  y={yScale(selectedPoint.solar_share_elec) - 20}
                   textAnchor="middle"
                   fontSize={12}
                   fontWeight="500"
                   fill={THEME.textColor}
                 >
-                  {selectedPoint.year}: {selectedPoint.solar_electricity} TWh
+                  {selectedPoint.year}:{" "}
+                  {selectedPoint.solar_share_elec?.toFixed(2)} %
                 </text>
               </g>
             )}
@@ -672,7 +679,7 @@ const SolarShare = ({
               fontSize={14}
               fill={THEME.textColor}
             >
-              Solar Generation Growth (TWh)
+              Solar Generation Growth (%)
             </text>
           </g>
         </svg>
@@ -681,4 +688,4 @@ const SolarShare = ({
   );
 };
 
-export default SolarShare;
+export default SolarShareInGeneration;

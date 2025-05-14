@@ -7,7 +7,11 @@ import {
   BarChart as BarChartIcon,
   PieChart as PieChartIcon,
 } from "lucide-react";
-import { AfricaSolarChoropleth, SolarShare } from "../charts";
+import {
+  AfricaSolarChoropleth,
+  SolarShare,
+  SolarShareInGeneration,
+} from "../charts";
 import { csv } from "d3";
 import { Icon } from "@iconify/react";
 
@@ -40,6 +44,7 @@ export default function AfricaSolarSurge() {
   const [fullData, setFullData] = useState(null);
   const [adoptionData, setAdoptionData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMap, setLoadingMap] = useState(true);
 
   const fetchData = async () => {
     try {
@@ -56,6 +61,7 @@ export default function AfricaSolarSurge() {
         d["solar_electricity"] = +d.solar_electricity;
         d["solar_consumption"] = +d.solar_consumption;
         d["solar_elec_per_capita"] = +d.solar_elec_per_capita;
+        d["solar_share_elec"] = +d.solar_share_elec;
         d["year"] = +d?.year;
         return d;
       });
@@ -531,6 +537,8 @@ export default function AfricaSolarSurge() {
                       isFullscreen={isFullscreen}
                       svgRef={svgRef}
                       data={adoptionData}
+                      setLoadingMap={setLoadingMap}
+                      loadingMap={loadingMap}
                       isModalOpen={isChoroplethModalOpen}
                       setIsModalOpen={setIsChoroplethModalOpen}
                       screenSize={screenSize}
@@ -550,6 +558,7 @@ export default function AfricaSolarSurge() {
             </div>
           </section>
         )}
+        {console.log(loading, loadingMap)}
 
         {activeTab === "impact" && (
           <section>
@@ -561,43 +570,112 @@ export default function AfricaSolarSurge() {
             </p>
 
             <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-              <h3 className="text-xl font-semibold mb-4">
-                Solar's Share in Electricity Generation
-              </h3>
-              <div className="bg-gray-100 h-64 flex items-center justify-center rounded-lg border border-gray-200">
-                <div className="text-center text-gray-500">
-                  <TrendingUp className="h-12 w-12 mx-auto mb-2" />
-                  <p className="text-sm font-medium">
-                    Area Chart: Solar's Percentage of Total Electricity
-                    Generation
-                  </p>
+              <div className="mb-2 flex h-fit items-center gap-3">
+                <h3 className="text-sm md:text-xl font-semibold flex-1">
+                  Solar Generation Growth in Africa (2000-2023)
+                </h3>
+                {/* RHS - Action buttons */}
+                <div className="w-fit h-8 flex justify-center gap-2 ">
+                  {/* Fullscreen toggle button */}
+                  <div
+                    onClick={toggleFullscreen}
+                    onMouseEnter={() => {
+                      setIconTooltip({
+                        visible: true,
+                        content: isFullscreen
+                          ? `Exit Fullscreen`
+                          : `Fullscreen`,
+                      });
+                    }}
+                    onMouseLeave={() => {
+                      setIconTooltip({
+                        visible: false,
+                        content: ``,
+                      });
+                    }}
+                    className="relative w-fit rounded-sm hover:bg-gray-300 p-1.5 bg-gray-200 flex items-center justify-center cursor-pointer"
+                  >
+                    {iconTooltip?.visible &&
+                      (iconTooltip?.content === "Fullscreen" ||
+                        iconTooltip?.content === "Exit Fullscreen") && (
+                        <div className="absolute bg-white border border-[#ccc] px-[10px] py-[6px] -top-9 text-xs rounded-sm">
+                          {iconTooltip?.content}
+                        </div>
+                      )}
+                    <Icon
+                      icon={
+                        isFullscreen
+                          ? "material-symbols-light:fullscreen-exit"
+                          : "material-symbols-light:fullscreen"
+                      }
+                      className="w-5 h-5"
+                    />
+                  </div>
+
+                  {/* Download button */}
+                  <div
+                    onClick={() => setIsModalOpen(true)}
+                    onMouseEnter={() => {
+                      setIconTooltip({
+                        visible: true,
+                        content: `Download`,
+                      });
+                    }}
+                    onMouseLeave={() => {
+                      setIconTooltip({
+                        visible: false,
+                        content: ``,
+                      });
+                    }}
+                    className="relative rounded-sm hover:bg-gray-300 p-1.5 bg-gray-200 flex items-center justify-center cursor-pointer"
+                  >
+                    {iconTooltip?.visible &&
+                      iconTooltip?.content === "Download" && (
+                        <div className="absolute bg-white border border-[#ccc] px-[10px] py-[6px] -top-9 text-xs rounded-sm">
+                          {iconTooltip?.content}
+                        </div>
+                      )}
+                    <Icon
+                      icon={"material-symbols-light:download-sharp"}
+                      className="w-5 h-5"
+                    />
+                  </div>
                 </div>
               </div>
-              <p className="mt-4 text-gray-700">
-                This chart displays solar energy's growing contribution to
-                Africa's electricity generation mix over time.
+
+              <div className=" min-h-64 flex items-center justify-center rounded-lg border border-gray-200">
+                {/* Loading state */}
+                {loading ? (
+                  <div className="w-full flex justify-center items-center py-20">
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-yellow-500"></div>
+                  </div>
+                ) : (
+                  // Line chart
+                  <SolarShareInGeneration
+                    data={data}
+                    THEME={THEME}
+                    isFullscreen={isFullscreen}
+                    screenSize={screenSize}
+                    setScreenSize={setScreenSize}
+                    toggleFullscreen={toggleFullscreen}
+                    iconTooltip={iconTooltip}
+                    setIconTooltip={setIconTooltip}
+                    chartContainerRef={chartContainerRef}
+                    isModalOpen={isModalOpen}
+                    setIsModalOpen={setIsModalOpen}
+                  />
+                )}
+              </div>
+
+              <p className="text-xs md:text-base mt-4 text-gray-700">
+                This chart illustrates Africa's remarkable solar energy journey,
+                with electricity generation growing from just <b>0.01 TWh</b> in
+                2000 to <b>27.14 TWh</b> by 2023 — a <b>271,300%</b> increase
+                over two decades.
               </p>
             </div>
 
             <div className="grid md:grid-cols-2 gap-6 mb-8">
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold mb-4">
-                  Solar vs. Total Energy Consumption
-                </h3>
-                <div className="bg-gray-100 h-64 flex items-center justify-center rounded-lg border border-gray-200">
-                  <div className="text-center text-gray-500">
-                    <BarChartIcon className="h-12 w-12 mx-auto mb-2" />
-                    <p className="text-sm font-medium">
-                      Stacked Bar: Solar vs. Other Energy Sources
-                    </p>
-                  </div>
-                </div>
-                <p className="mt-4 text-gray-700">
-                  Showing the proportion of solar energy relative to total
-                  energy consumption across Africa.
-                </p>
-              </div>
-
               <div className="bg-white p-6 rounded-lg shadow-md">
                 <h3 className="text-xl font-semibold mb-4">
                   Renewable Energy Mix

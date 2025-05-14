@@ -10,6 +10,8 @@ export default function AfricaSolarChoropleth({
   svgRef,
   isModalOpen,
   setIsModalOpen,
+  setLoadingMap,
+  loadingMap,
 }) {
   const tooltipRef = useRef(null);
   const containerRef = useRef(null);
@@ -256,6 +258,7 @@ export default function AfricaSolarChoropleth({
           "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson"
         );
         const worldData = await response.json();
+        setLoadingMap(false);
 
         // Filter for African countries only
         const africaData = {
@@ -549,6 +552,14 @@ export default function AfricaSolarChoropleth({
 
     return `${fontSize}px`;
   };
+
+  if (loadingMap) {
+    return (
+      <div className="w-full flex justify-center items-center py-20">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-yellow-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-full pb-2 ">
