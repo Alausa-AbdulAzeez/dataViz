@@ -4,6 +4,7 @@ import AfricasSolarSurge from "./bar/AfricasSolarSurge";
 import SolarShare from "./bar/SolarShare";
 import SolarShareInGeneration from "./bar/SolarShareInGeneration";
 import AfricaSolarChoropleth from "./choropleth/AfricaSolarChoropleth";
+import RenewableEnergyMix from "./stackedArea/RenewableEnergyMix";
 
 export {
   WorldPopulation,
@@ -12,4 +13,5 @@ export {
   SolarShareInGeneration,
   AfricasSolarSurge,
   SolarShare,
+  RenewableEnergyMix,
 };

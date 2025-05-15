@@ -1,11 +1,32 @@
-import { extent, scaleLinear, line, curveMonotoneX } from "d3";
-import React, { useEffect, useRef, useState } from "react";
+import {
+  extent,
+  scaleLinear,
+  line,
+  curveMonotoneX,
+  stack,
+  max,
+  ticks,
+} from "d3";
+import * as d3 from "d3";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "@iconify/react";
 
 import html2canvas from "html2canvas";
 
-const SolarShareInGeneration = ({
-  data,
+// Sample data - replace with actual data
+const data = [
+  { year: 2010, Solar: 2, Hydro: 35, Wind: 4, Geothermal: 7, Biomass: 12 },
+  { year: 2012, Solar: 4, Hydro: 36, Wind: 6, Geothermal: 8, Biomass: 13 },
+  { year: 2014, Solar: 8, Hydro: 38, Wind: 9, Geothermal: 9, Biomass: 13 },
+  { year: 2016, Solar: 15, Hydro: 37, Wind: 12, Geothermal: 10, Biomass: 14 },
+  { year: 2018, Solar: 25, Hydro: 39, Wind: 16, Geothermal: 11, Biomass: 14 },
+  { year: 2020, Solar: 38, Hydro: 40, Wind: 22, Geothermal: 12, Biomass: 15 },
+  { year: 2022, Solar: 55, Hydro: 41, Wind: 28, Geothermal: 13, Biomass: 16 },
+  { year: 2024, Solar: 75, Hydro: 42, Wind: 35, Geothermal: 14, Biomass: 16 },
+];
+
+const RenewableEnergyMix = ({
+  //   data,
   isFullscreen,
   chartContainerRef,
   isModalOpen,
@@ -22,6 +43,31 @@ const SolarShareInGeneration = ({
     width: 0,
     height: 0,
   });
+  const [viewType, setViewType] = useState("absolute");
+  const [tooltipData, setTooltipData] = useState(null);
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+
+  const colors = {
+    Solar: "#FDB813",
+    Hydro: "#3E97D1",
+    Wind: "#8CD9B3",
+    Geothermal: "#E27A3F",
+    Biomass: "#7A9D54",
+  };
+
+  const keys = ["Solar", "Hydro", "Wind", "Geothermal", "Biomass"];
+
+  // Chart margins and dimensions
+  const margins = {
+    top: 40,
+    right: screenSize === "large" ? 85 : 10,
+    bottom: 60,
+    left: screenSize === "large" ? 80 : 50,
+  };
+  const width = chartDimensions.width || 600;
+  const height = chartDimensions.height || 400;
+  const innerWidth = width - margins.left - margins.right;
+  const innerHeight = height - margins.top - margins.bottom;
 
   // Update chart dimensions on window resize
   useEffect(() => {
@@ -56,17 +102,69 @@ const SolarShareInGeneration = ({
     };
   }, [chartContainerRef, isFullscreen]);
 
-  // Chart margins and dimensions
-  const margins = {
-    top: 40,
-    right: screenSize === "large" ? 85 : 10,
-    bottom: 60,
-    left: screenSize === "large" ? 80 : 50,
-  };
-  const width = chartDimensions.width || 600;
-  const height = chartDimensions.height || 400;
-  const innerWidth = width - margins.left - margins.right;
-  const innerHeight = height - margins.top - margins.bottom;
+  // Calculate percentage data
+  const percentageData = useMemo(() => {
+    return data.map((yearData) => {
+      const total = keys.reduce((sum, key) => sum + yearData[key], 0);
+      const newEntry = { year: yearData.year };
+      keys.forEach((key) => {
+        newEntry[key] = (yearData[key] / total) * 100;
+      });
+      return newEntry;
+    });
+  }, [data]);
+
+  // Determine which dataset to use
+  const currentData = viewType === "absolute" ? data : percentageData;
+
+  // Setup scales and generators
+  const xScale = useMemo(() => {
+    return scaleLinear()
+      .domain(extent(data, (d) => d.year))
+      .range([0, width]);
+  }, [data, width]);
+
+  // Stack the data
+  const stackedData = useMemo(() => {
+    const stack = d3.stack().keys(keys);
+    return stack(currentData);
+  }, [currentData, keys]);
+
+  const yScale = useMemo(() => {
+    return d3
+      .scaleLinear()
+      .domain([
+        0,
+        viewType === "absolute"
+          ? max(stackedData[stackedData.length - 1], (d) => d[1])
+          : 100,
+      ])
+      .range([height, 0]);
+  }, [height, stackedData, viewType]);
+
+  // Create the area paths
+  const areaGenerator = useMemo(() => {
+    return d3
+      .area()
+      .x((d) => xScale(d.data.year))
+      .y0((d) => yScale(d[0]))
+      .y1((d) => yScale(d[1]))
+      .curve(curveMonotoneX);
+  }, [xScale, yScale]);
+
+  // Create X axis ticks
+  const xTicks = useMemo(() => {
+    return data.map((d) => d.year);
+  }, [data]);
+
+  // Create Y axis ticks
+  const yTicks = useMemo(() => {
+    const maxValue =
+      viewType === "absolute"
+        ? max(stackedData[stackedData.length - 1], (d) => d[1])
+        : 100;
+    return ticks(0, maxValue, 10);
+  }, [stackedData, viewType]);
 
   // Helper functions for download handlers
   const onDownload = (type, ref) => {
@@ -112,17 +210,54 @@ const SolarShareInGeneration = ({
       saveAs(csvBlob, `population-data-full-${new Date().getTime()}.csv`);
     }
   };
-  // X-axis scale
-  const xScale = scaleLinear()
-    .domain([2000, 2022])
-    .range([0, innerWidth])
-    .nice();
 
-  // Y-scale
-  const yScale = scaleLinear()
-    .domain([0, Math.max(...data.map((d) => d.solar_share_elec)) * 1.1]) // Add 10% padding at the top
-    .range([innerHeight, 0])
-    .nice();
+  // Handle mouse movement for tooltip
+  const handleMouseMove = (event) => {
+    const svgElement = event.currentTarget;
+    const svgRect = svgElement.getBoundingClientRect();
+    const mouseX = event.clientX - svgRect.left - margins.left;
+    const mouseY = event.clientY - svgRect.top - margins.top;
+
+    console.log("mouseX", mouseX);
+    console.log("mouseY", mouseY);
+    console.log("width", width);
+    console.log("height", height);
+
+    if (mouseX < 0 || mouseX > width || mouseY < 0 || mouseY > height) {
+      setTooltipData(null);
+      return;
+    }
+
+    const year = Math.round(xScale.invert(mouseX));
+    const selectedData =
+      currentData.find((d) => d.year === year) ||
+      currentData.reduce((prev, curr) =>
+        Math.abs(curr.year - year) < Math.abs(prev.year - year) ? curr : prev
+      );
+
+    if (selectedData) {
+      const total = keys.reduce((sum, key) => sum + selectedData[key], 0);
+
+      setTooltipData({
+        year: selectedData.year,
+        values: keys.map((key) => ({
+          key,
+          value: selectedData[key],
+          color: colors[key],
+        })),
+        total,
+      });
+
+      setTooltipPos({
+        x: event.clientX,
+        y: event.clientY,
+      });
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setTooltipData(null);
+  };
 
   // Create line generator
   const lineGenerator = line()
@@ -152,7 +287,6 @@ const SolarShareInGeneration = ({
   };
 
   const handlePointLeave = () => {
-    console.log("left");
     setSelectedPoint(null);
   };
 
@@ -185,7 +319,12 @@ const SolarShareInGeneration = ({
       {/* Hidden chart container */}
       <div ref={chartRef} className="fixed -top-[2000%]">
         {/* The chart */}
-        <svg width={width} height={height}>
+        <svg
+          width={width + margins.left + margins.right}
+          height={height + margins.top + margins.bottom}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+        >
           <defs>
             {/* Gradient for area fill */}
             <linearGradient id="solarGradient" x1="0" y1="0" x2="0" y2="1">
@@ -470,36 +609,12 @@ const SolarShareInGeneration = ({
         )}
 
         {/* The chart */}
-        <svg width={width} height={height}>
-          <defs>
-            {/* Gradient for area fill */}
-            <linearGradient id="solarGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop
-                offset="0%"
-                stopColor={THEME.primaryColorLight}
-                stopOpacity="0.6"
-              />
-              <stop
-                offset="100%"
-                stopColor={THEME.primaryColorLight}
-                stopOpacity="0.1"
-              />
-            </linearGradient>
-
-            {/* Filter for drop shadow */}
-            <filter id="dropShadow" height="130%">
-              <feGaussianBlur in="SourceAlpha" stdDeviation="3" />
-              <feOffset dx="0" dy="2" result="offsetblur" />
-              <feComponentTransfer>
-                <feFuncA type="linear" slope="0.2" />
-              </feComponentTransfer>
-              <feMerge>
-                <feMergeNode />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
-
+        <svg
+          width={width}
+          height={height + margins.top + margins.bottom}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+        >
           {/* Chart title and subtitle */}
           {isFullscreen && (
             <g transform={`translate(0, -5)`}>
@@ -521,176 +636,149 @@ const SolarShareInGeneration = ({
             </g>
           )}
 
-          <g transform={`translate(${margins.left}, ${margins.top})`}>
-            {/* Area under the line */}
-            <path d={areaPath} fill="url(#solarGradient)" />
-
-            {/* X and Y axis lines */}
-            <line
-              x1={0}
-              y1={innerHeight}
-              x2={innerWidth}
-              y2={innerHeight}
-              stroke={THEME.borderColor}
-              strokeWidth={1}
-            />
-            <line
-              x1={0}
-              y1={0}
-              x2={0}
-              y2={innerHeight}
-              stroke={THEME.borderColor}
-              strokeWidth={1}
-            />
-
-            {/* Vertical grids */}
-            {xScale.ticks(6).map((datum) => (
-              <g key={`x-${datum}`}>
-                <line
-                  stroke={THEME.borderColor}
-                  strokeDasharray="4,4"
-                  strokeOpacity={0.5}
-                  y2={innerHeight}
-                  x1={xScale(datum)}
-                  x2={xScale(datum)}
-                />
-                <text
-                  y={innerHeight + 16}
-                  x={xScale(datum)}
-                  textAnchor="middle"
-                  fontSize={12}
-                  fill={THEME.textColor}
-                >
-                  {datum}
-                </text>
-              </g>
-            ))}
-
-            {/* Horizontal grids */}
-            {yScale.ticks(5).map((datum) => (
-              <g key={`y-${datum}`}>
-                <text
-                  fill={THEME.textColor}
-                  x={-10}
-                  y={yScale(datum)}
-                  fontSize={12}
-                  dy={"0.36em"}
-                  textAnchor="end"
-                >
-                  {formatYValue(datum)}
-                </text>
-                <line
-                  stroke={THEME.borderColor}
-                  strokeDasharray="4,4"
-                  strokeOpacity={0.5}
-                  x2={innerWidth}
-                  y1={yScale(datum)}
-                  y2={yScale(datum)}
-                />
-              </g>
-            ))}
-
-            {/* Line path */}
-            <path
-              d={lineGenerator(data)}
-              fill="none"
-              stroke={THEME.primaryColor}
-              strokeWidth={3}
-              filter="url(#dropShadow)"
-            />
-
-            {/* Data points */}
-            {data.map((datum) => (
-              <g key={datum.year}>
-                {/* Invisible hitbox circle */}
-                <circle
-                  cx={xScale(datum.year)}
-                  cy={yScale(datum.solar_share_elec)}
-                  r={10} // Larger hit area
-                  fill="transparent"
-                  onMouseEnter={() => handlePointHover(datum)}
-                  onMouseLeave={handlePointLeave}
-                />
-
-                {/* Visible circle */}
-                <circle
-                  cx={xScale(datum.year)}
-                  cy={yScale(datum.solar_share_elec)}
-                  r={
-                    selectedPoint === datum
-                      ? screenSize === "small"
-                        ? 1.5
-                        : 4
-                      : screenSize === "small"
-                      ? 3
-                      : 6
-                  }
-                  fill={
-                    selectedPoint === datum
-                      ? THEME.accentColor
-                      : THEME.primaryColor
-                  }
-                  stroke={THEME.backgroundColor}
-                  strokeWidth={screenSize === "small" ? 1 : 2}
-                  style={{ cursor: "pointer", transition: "r 0.2s" }}
-                  pointerEvents="none" // Let the invisible circle handle events
-                />
-              </g>
-            ))}
-
-            {/* Tooltip for selected point */}
-            {selectedPoint && (
-              <g style={{ pointerEvents: "none" }}>
-                <rect
-                  x={xScale(selectedPoint.year) - 70}
-                  y={yScale(selectedPoint.solar_share_elec) - 40}
-                  width={110}
-                  height={30}
-                  rx={4}
-                  fill={THEME.backgroundColor}
-                  filter="url(#dropShadow)"
-                />
-                <text
-                  x={xScale(selectedPoint.year) - 15}
-                  y={yScale(selectedPoint.solar_share_elec) - 20}
-                  textAnchor="middle"
-                  fontSize={12}
-                  fontWeight="500"
-                  fill={THEME.textColor}
-                >
-                  {selectedPoint.year}:{" "}
-                  {selectedPoint.solar_share_elec?.toFixed(2)} %
-                </text>
-              </g>
-            )}
-
-            {/* X axis label */}
+          <g transform={`translate(${margins.left},${margins.top})`}>
+            {/* Chart title */}
             <text
-              x={innerWidth / 2}
-              y={innerHeight + 40}
+              x={width / 2}
+              y={-15}
               textAnchor="middle"
-              fontSize={14}
-              fill={THEME.textColor}
+              fontSize="16px"
+              fontWeight="bold"
             >
-              Year
+              Renewable Energy Mix in Africa (2010-2024)
             </text>
 
-            {/* Y axis label */}
-            <text
-              transform={`rotate(-90, -40, ${innerHeight / 2})`}
-              x={-40}
-              y={innerHeight / 2}
-              textAnchor="middle"
-              fontSize={14}
-              fill={THEME.textColor}
-            >
-              Solar Share of Electricity Generation (%)
-            </text>
+            {/* X Axis */}
+            <g transform={`translate(0,${height})`}>
+              {xTicks.map((tick) => (
+                <g
+                  key={`x-tick-${tick}`}
+                  transform={`translate(${xScale(tick)},0)`}
+                >
+                  <line y2="6" stroke="currentColor" />
+                  <text
+                    key={tick}
+                    style={{ fontSize: "12px", textAnchor: "middle" }}
+                    y={20}
+                  >
+                    {tick}
+                  </text>
+                </g>
+              ))}
+              {/* X Axis Label */}
+              <text x={width / 2} y={40} textAnchor="middle" fontSize="14px">
+                Year
+              </text>
+            </g>
+
+            {/* Y Axis */}
+            <g>
+              {yTicks.map((tick) => (
+                <g
+                  key={`y-tick-${tick}`}
+                  transform={`translate(0,${yScale(tick)})`}
+                >
+                  <line x2="-6" stroke="currentColor" />
+                  <text
+                    key={tick}
+                    style={{ fontSize: "12px", textAnchor: "end" }}
+                    x="-10"
+                    y="4"
+                  >
+                    {tick}
+                  </text>
+                  <line
+                    x1="0"
+                    x2={width}
+                    stroke="#e0e0e0"
+                    strokeDasharray="3,3"
+                    opacity="0.5"
+                  />
+                </g>
+              ))}
+              {/* Y Axis Label */}
+              <text
+                transform={`rotate(-90) translate(${-height / 2}, ${-40})`}
+                textAnchor="middle"
+                fontSize="14px"
+              >
+                {viewType === "absolute"
+                  ? "Energy Production (TWh)"
+                  : "Percentage (%)"}
+              </text>
+            </g>
+
+            {/* Stacked Areas */}
+            {stackedData.map((layer, i) => (
+              <path
+                key={`area-${keys[i]}`}
+                d={areaGenerator(layer)}
+                fill={colors[keys[i]]}
+                opacity="0.8"
+                style={{ transition: "opacity 0.2s" }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.opacity = "1";
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.opacity = "0.8";
+                }}
+              />
+            ))}
+
+            {/* Legend */}
+            <g transform={`translate(${innerWidth - 100}, 0)`}>
+              {keys.map((key, i) => (
+                <g key={`legend-${key}`} transform={`translate(0, ${i * 20})`}>
+                  <rect width="15" height="15" fill={colors[key]} />
+                  <text x="25" y="12.5" textAnchor="start" fontSize="12px">
+                    {key}
+                  </text>
+                </g>
+              ))}
+            </g>
+
+            {/* Invisible overlay for tooltip */}
+            <rect
+              width={width}
+              height={height}
+              fill="transparent"
+              pointerEvents="all"
+            />
           </g>
         </svg>
       </div>
+      {/* Tooltip */}
+      {tooltipData && (
+        <div
+          className="absolute bg-white border border-gray-200 shadow-lg rounded p-2 z-10 pointer-events-none"
+          style={{
+            left: `${tooltipPos.x + 10}px`,
+            top: `${tooltipPos.y - 120}px`,
+            opacity: 0.9,
+          }}
+        >
+          <div className="font-bold mb-1">Year: {tooltipData.year}</div>
+          {tooltipData.values.map((item) => (
+            <div key={`tooltip-${item.key}`} className="flex items-center mb-1">
+              <div
+                className="w-3 h-3 mr-2"
+                style={{ backgroundColor: item.color }}
+              ></div>
+              <span>
+                {item.key}: {item.value.toFixed(1)}
+                {viewType === "absolute" ? " TWh" : "%"}
+              </span>
+            </div>
+          ))}
+          {viewType === "absolute" && (
+            <div className="font-bold mt-1">
+              Total: {tooltipData.total.toFixed(1)} TWh
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
 
-export default SolarShareInGeneration;
+export default RenewableEnergyMix;
