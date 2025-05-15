@@ -14,19 +14,83 @@ import { Icon } from "@iconify/react";
 import html2canvas from "html2canvas";
 
 // Sample data - replace with actual data
-const data = [
-  { year: 2010, Solar: 2, Hydro: 35, Wind: 4, Geothermal: 7, Biomass: 12 },
-  { year: 2012, Solar: 4, Hydro: 36, Wind: 6, Geothermal: 8, Biomass: 13 },
-  { year: 2014, Solar: 8, Hydro: 38, Wind: 9, Geothermal: 9, Biomass: 13 },
-  { year: 2016, Solar: 15, Hydro: 37, Wind: 12, Geothermal: 10, Biomass: 14 },
-  { year: 2018, Solar: 25, Hydro: 39, Wind: 16, Geothermal: 11, Biomass: 14 },
-  { year: 2020, Solar: 38, Hydro: 40, Wind: 22, Geothermal: 12, Biomass: 15 },
-  { year: 2022, Solar: 55, Hydro: 41, Wind: 28, Geothermal: 13, Biomass: 16 },
-  { year: 2024, Solar: 75, Hydro: 42, Wind: 35, Geothermal: 14, Biomass: 16 },
-];
+// const data = [
+//   {
+//     year: 2010,
+//     Solar: 2,
+//     Hydro: 35,
+//     Wind: 4,
+//     Biofuel: 12,
+//     OtherRenewable: 7,
+//     Oil: 120,
+//   },
+//   {
+//     year: 2012,
+//     Solar: 4,
+//     Hydro: 36,
+//     Wind: 6,
+//     Biofuel: 13,
+//     OtherRenewable: 8,
+//     Oil: 125,
+//   },
+//   {
+//     year: 2014,
+//     Solar: 8,
+//     Hydro: 38,
+//     Wind: 9,
+//     Biofuel: 13,
+//     OtherRenewable: 9,
+//     Oil: 130,
+//   },
+//   {
+//     year: 2016,
+//     Solar: 15,
+//     Hydro: 37,
+//     Wind: 12,
+//     Biofuel: 14,
+//     OtherRenewable: 10,
+//     Oil: 128,
+//   },
+//   {
+//     year: 2018,
+//     Solar: 25,
+//     Hydro: 39,
+//     Wind: 16,
+//     Biofuel: 14,
+//     OtherRenewable: 11,
+//     Oil: 132,
+//   },
+//   {
+//     year: 2020,
+//     Solar: 38,
+//     Hydro: 40,
+//     Wind: 22,
+//     Biofuel: 15,
+//     OtherRenewable: 12,
+//     Oil: 118,
+//   },
+//   {
+//     year: 2022,
+//     Solar: 55,
+//     Hydro: 41,
+//     Wind: 28,
+//     Biofuel: 16,
+//     OtherRenewable: 13,
+//     Oil: 122,
+//   },
+//   {
+//     year: 2024,
+//     Solar: 75,
+//     Hydro: 42,
+//     Wind: 35,
+//     Biofuel: 16,
+//     OtherRenewable: 14,
+//     Oil: 115,
+//   },
+// ];
 
 const RenewableEnergyMix = ({
-  //   data,
+  data,
   isFullscreen,
   chartContainerRef,
   isModalOpen,
@@ -38,7 +102,7 @@ const RenewableEnergyMix = ({
   const [selectedPoint, setSelectedPoint] = useState(null);
   const chartRef = useRef(null);
   const [activeDownloadTab, setActiveDownloadTab] = useState("Chart");
-
+  console.log(data);
   const [chartDimensions, setChartDimensions] = useState({
     width: 0,
     height: 0,
@@ -49,17 +113,23 @@ const RenewableEnergyMix = ({
   const [sourceView, setSourceView] = useState("all"); // 'all' or 'renewables'
 
   const colors = {
-    Solar: "#FDB813", // Yellow for sun
-    Hydro: "#3E97D1", // Blue for water
-    Wind: "#8CD9B3", // Light green for wind
-    Biofuel: "#7A9D54", // Dark green for biofuel
-    OtherRenewable: "#9D54A2", // Purple for other renewables
-    Oil: "#4F4F4F", // Dark gray for oil
+    solar_electricity: "#FDB813", // Yellow for sun
+    hydro_electricity: "#3E97D1", // Blue for water
+    wind_electricity: "#8CD9B3", // Light green for wind
+    biofuel_electricity: "#7A9D54", // Dark green for biofuel
+    other_renewable_electricity: "#9D54A2", // Purple for other renewables
+    oil_electricity: "#4F4F4F", // Dark gray for oil
   };
 
   // Define keys based on view type
-  const renewableKeys = ["Solar", "Hydro", "Wind", "Biofuel", "OtherRenewable"];
-  const allKeys = [...renewableKeys, "Oil"];
+  const renewableKeys = [
+    "solar_electricity",
+    "hydro_electricity",
+    "wind_electricity",
+    "biofuel_electricity",
+    "other_renewable_electricity",
+  ];
+  const allKeys = [...renewableKeys, "oil_electricity"];
   const activeKeys = sourceView === "renewables" ? renewableKeys : allKeys;
 
   // Chart margins and dimensions
@@ -129,7 +199,8 @@ const RenewableEnergyMix = ({
     return d3
       .scaleLinear()
       .domain(d3.extent(data, (d) => d.year))
-      .range([0, width]);
+      .range([0, width])
+      .nice();
   }, [data, width]);
 
   // Stack the data
@@ -771,7 +842,7 @@ const RenewableEnergyMix = ({
               <path
                 key={`area-${activeKeys[i]}`}
                 d={areaGenerator(layer)}
-                fill={"#000"}
+                fill={colors[activeKeys[i]]}
                 opacity="0.8"
                 style={{ transition: "opacity 0.2s" }}
                 onMouseOver={(e) => {
@@ -817,7 +888,7 @@ const RenewableEnergyMix = ({
                 : tooltipPos.x + 350 > window.innerWidth
                 ? tooltipPos.x - 420
                 : tooltipPos.x - 100,
-            top: screenSize === "small" ? "auto" : tooltipPos.y + 10,
+            top: screenSize === "small" ? "auto" : tooltipPos.y - 50,
             bottom: screenSize === "small" ? 20 : "auto",
             transform: screenSize === "small" ? "translateX(-50%)" : "none",
             width: screenSize === "small" ? "90vw" : "240px",

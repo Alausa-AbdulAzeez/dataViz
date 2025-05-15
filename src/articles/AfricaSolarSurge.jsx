@@ -54,7 +54,11 @@ export default function AfricaSolarSurge() {
           d["solar_electricity"] = +d.solar_electricity;
           d["solar_consumption"] = +d.solar_consumption;
           d["solar_elec_per_capita"] = +d.solar_elec_per_capita;
-          d["year"] = +d?.year;
+          d["oil_electricity"] = +d?.oil_electricity;
+          d["wind_electricity"] = +d?.wind_electricity;
+          d["hydro_electricity"] = +d?.hydro_electricity;
+          d["biofuel_electricity"] = +d?.biofuel_electricity;
+          d["other_renewable_electricity"] = +d?.other_renewable_electricity;
           return d;
         }
       });
@@ -64,6 +68,11 @@ export default function AfricaSolarSurge() {
         d["solar_elec_per_capita"] = +d.solar_elec_per_capita;
         d["solar_share_elec"] = +d.solar_share_elec;
         d["year"] = +d?.year;
+        d["oil_electricity"] = +d?.oil_electricity;
+        d["wind_electricity"] = +d?.wind_electricity;
+        d["hydro_electricity"] = +d?.hydro_electricity;
+        d["biofuel_electricity"] = +d?.biofuel_electricity;
+        d["other_renewable_electricity"] = +d?.other_renewable_electricity;
         return d;
       });
 
