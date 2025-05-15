@@ -46,16 +46,21 @@ const RenewableEnergyMix = ({
   const [viewType, setViewType] = useState("absolute");
   const [tooltipData, setTooltipData] = useState(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+  const [sourceView, setSourceView] = useState("all"); // 'all' or 'renewables'
 
   const colors = {
-    Solar: "#FDB813",
-    Hydro: "#3E97D1",
-    Wind: "#8CD9B3",
-    Geothermal: "#E27A3F",
-    Biomass: "#7A9D54",
+    Solar: "#FDB813", // Yellow for sun
+    Hydro: "#3E97D1", // Blue for water
+    Wind: "#8CD9B3", // Light green for wind
+    Biofuel: "#7A9D54", // Dark green for biofuel
+    OtherRenewable: "#9D54A2", // Purple for other renewables
+    Oil: "#4F4F4F", // Dark gray for oil
   };
 
-  const keys = ["Solar", "Hydro", "Wind", "Geothermal", "Biomass"];
+  // Define keys based on view type
+  const renewableKeys = ["Solar", "Hydro", "Wind", "Biofuel", "OtherRenewable"];
+  const allKeys = [...renewableKeys, "Oil"];
+  const activeKeys = sourceView === "renewables" ? renewableKeys : allKeys;
 
   // Chart margins and dimensions
   const margins = {
@@ -105,30 +110,33 @@ const RenewableEnergyMix = ({
   // Calculate percentage data
   const percentageData = useMemo(() => {
     return data.map((yearData) => {
-      const total = keys.reduce((sum, key) => sum + yearData[key], 0);
+      // Only include active keys in total calculation
+      const total = activeKeys.reduce((sum, key) => sum + yearData[key], 0);
       const newEntry = { year: yearData.year };
-      keys.forEach((key) => {
+      // Calculate percentages for all keys, but we'll only use active ones
+      [...renewableKeys, "Oil"].forEach((key) => {
         newEntry[key] = (yearData[key] / total) * 100;
       });
       return newEntry;
     });
-  }, [data]);
+  }, [data, activeKeys]);
 
   // Determine which dataset to use
   const currentData = viewType === "absolute" ? data : percentageData;
 
   // Setup scales and generators
   const xScale = useMemo(() => {
-    return scaleLinear()
-      .domain(extent(data, (d) => d.year))
+    return d3
+      .scaleLinear()
+      .domain(d3.extent(data, (d) => d.year))
       .range([0, width]);
   }, [data, width]);
 
   // Stack the data
   const stackedData = useMemo(() => {
-    const stack = d3.stack().keys(keys);
+    const stack = d3.stack().keys(activeKeys);
     return stack(currentData);
-  }, [currentData, keys]);
+  }, [currentData, activeKeys]);
 
   const yScale = useMemo(() => {
     return d3
@@ -136,9 +144,10 @@ const RenewableEnergyMix = ({
       .domain([
         0,
         viewType === "absolute"
-          ? max(stackedData[stackedData.length - 1], (d) => d[1])
+          ? d3.max(stackedData[stackedData.length - 1], (d) => d[1])
           : 100,
       ])
+      .nice()
       .range([height, 0]);
   }, [height, stackedData, viewType]);
 
@@ -149,7 +158,7 @@ const RenewableEnergyMix = ({
       .x((d) => xScale(d.data.year))
       .y0((d) => yScale(d[0]))
       .y1((d) => yScale(d[1]))
-      .curve(curveMonotoneX);
+      .curve(d3.curveMonotoneX);
   }, [xScale, yScale]);
 
   // Create X axis ticks
@@ -161,9 +170,9 @@ const RenewableEnergyMix = ({
   const yTicks = useMemo(() => {
     const maxValue =
       viewType === "absolute"
-        ? max(stackedData[stackedData.length - 1], (d) => d[1])
+        ? d3.max(stackedData[stackedData.length - 1], (d) => d[1])
         : 100;
-    return ticks(0, maxValue, 10);
+    return d3.ticks(0, maxValue, 10);
   }, [stackedData, viewType]);
 
   // Helper functions for download handlers
@@ -218,11 +227,6 @@ const RenewableEnergyMix = ({
     const mouseX = event.clientX - svgRect.left - margins.left;
     const mouseY = event.clientY - svgRect.top - margins.top;
 
-    console.log("mouseX", mouseX);
-    console.log("mouseY", mouseY);
-    console.log("width", width);
-    console.log("height", height);
-
     if (mouseX < 0 || mouseX > width || mouseY < 0 || mouseY > height) {
       setTooltipData(null);
       return;
@@ -236,11 +240,11 @@ const RenewableEnergyMix = ({
       );
 
     if (selectedData) {
-      const total = keys.reduce((sum, key) => sum + selectedData[key], 0);
+      const total = activeKeys.reduce((sum, key) => sum + selectedData[key], 0);
 
       setTooltipData({
         year: selectedData.year,
-        values: keys.map((key) => ({
+        values: activeKeys.map((key) => ({
           key,
           value: selectedData[key],
           color: colors[key],
@@ -315,7 +319,7 @@ const RenewableEnergyMix = ({
   };
 
   return (
-    <div className="w-full h-full font-sans">
+    <div className="w-full h-full font-sans relative">
       {/* Hidden chart container */}
       <div ref={chartRef} className="fixed -top-[2000%]">
         {/* The chart */}
@@ -523,6 +527,60 @@ const RenewableEnergyMix = ({
           isFullscreen ? "fixed inset-0 z-50 max-w-none rounded-none" : ""
         }`}
       >
+        <div className="flex gap-4 mb-4">
+          {/* View Type Toggle: Absolute vs Percentage */}
+          <div className="inline-flex rounded-md shadow-sm" role="group">
+            <button
+              type="button"
+              className={`px-4 py-2 text-sm font-medium rounded-l-lg ${
+                viewType === "absolute"
+                  ? "bg-blue-700 text-white"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+              onClick={() => setViewType("absolute")}
+            >
+              Absolute (TWh)
+            </button>
+            <button
+              type="button"
+              className={`px-4 py-2 text-sm font-medium rounded-r-lg ${
+                viewType === "percentage"
+                  ? "bg-blue-700 text-white"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+              onClick={() => setViewType("percentage")}
+            >
+              Percentage (%)
+            </button>
+          </div>
+
+          {/* Energy Source Toggle: All vs Renewables Only */}
+          <div className="inline-flex rounded-md shadow-sm" role="group">
+            <button
+              type="button"
+              className={`px-4 py-2 text-sm font-medium rounded-l-lg ${
+                sourceView === "all"
+                  ? "bg-green-700 text-white"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+              onClick={() => setSourceView("all")}
+            >
+              All Sources
+            </button>
+            <button
+              type="button"
+              className={`px-4 py-2 text-sm font-medium rounded-r-lg ${
+                sourceView === "renewables"
+                  ? "bg-green-700 text-white"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+              onClick={() => setSourceView("renewables")}
+            >
+              Renewables Only
+            </button>
+          </div>
+        </div>
+
         {/* Download Modal */}
         {isModalOpen && (
           <div className="absolute w-full h-full flex items-start justify-center">
@@ -711,9 +769,9 @@ const RenewableEnergyMix = ({
             {/* Stacked Areas */}
             {stackedData.map((layer, i) => (
               <path
-                key={`area-${keys[i]}`}
+                key={`area-${activeKeys[i]}`}
                 d={areaGenerator(layer)}
-                fill={colors[keys[i]]}
+                fill={"#000"}
                 opacity="0.8"
                 style={{ transition: "opacity 0.2s" }}
                 onMouseOver={(e) => {
@@ -727,7 +785,7 @@ const RenewableEnergyMix = ({
 
             {/* Legend */}
             <g transform={`translate(${innerWidth - 100}, 0)`}>
-              {keys.map((key, i) => (
+              {activeKeys.map((key, i) => (
                 <g key={`legend-${key}`} transform={`translate(0, ${i * 20})`}>
                   <rect width="15" height="15" fill={colors[key]} />
                   <text x="25" y="12.5" textAnchor="start" fontSize="12px">
@@ -750,11 +808,27 @@ const RenewableEnergyMix = ({
       {/* Tooltip */}
       {tooltipData && (
         <div
-          className="absolute bg-white border border-gray-200 shadow-lg rounded p-2 z-10 pointer-events-none"
+          className=" bg-white border border-gray-200 shadow-lg rounded p-2 z-10 pointer-events-none"
           style={{
-            left: `${tooltipPos.x + 10}px`,
-            top: `${tooltipPos.y - 120}px`,
-            opacity: 0.9,
+            position: screenSize === "small" ? "fixed" : "absolute",
+            left:
+              screenSize === "small"
+                ? "50%"
+                : tooltipPos.x + 350 > window.innerWidth
+                ? tooltipPos.x - 420
+                : tooltipPos.x - 100,
+            top: screenSize === "small" ? "auto" : tooltipPos.y + 10,
+            bottom: screenSize === "small" ? 20 : "auto",
+            transform: screenSize === "small" ? "translateX(-50%)" : "none",
+            width: screenSize === "small" ? "90vw" : "240px",
+            zIndex: 10,
+            pointerEvents: "none",
+            backgroundColor: "white",
+            border: "1px solid #e5e7eb", // Tailwind's border-gray-200
+            borderRadius: "0.375rem",
+            padding: "0.5rem",
+            boxShadow: "0 5px 10px rgba(0,0,0,0.1)",
+            opacity: 0.95,
           }}
         >
           <div className="font-bold mb-1">Year: {tooltipData.year}</div>
@@ -765,14 +839,14 @@ const RenewableEnergyMix = ({
                 style={{ backgroundColor: item.color }}
               ></div>
               <span>
-                {item.key}: {item.value.toFixed(1)}
+                {item.key}: {item?.value?.toFixed(1)}
                 {viewType === "absolute" ? " TWh" : "%"}
               </span>
             </div>
           ))}
           {viewType === "absolute" && (
             <div className="font-bold mt-1">
-              Total: {tooltipData.total.toFixed(1)} TWh
+              Total: {tooltipData?.total?.toFixed(1)} TWh
             </div>
           )}
         </div>
