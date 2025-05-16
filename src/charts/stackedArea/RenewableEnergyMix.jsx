@@ -177,6 +177,14 @@ const RenewableEnergyMix = ({
     };
   }, [chartContainerRef, isFullscreen]);
 
+  // Format source names for display
+  const formatSourceName = (key) => {
+    return key
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
   // Calculate percentage data
   const percentageData = useMemo(() => {
     return data.map((yearData) => {
@@ -199,7 +207,7 @@ const RenewableEnergyMix = ({
     return d3
       .scaleLinear()
       .domain(d3.extent(data, (d) => d.year))
-      .range([0, width])
+      .range([0, width - 30])
       .nice();
   }, [data, width]);
 
@@ -232,10 +240,13 @@ const RenewableEnergyMix = ({
       .curve(d3.curveMonotoneX);
   }, [xScale, yScale]);
 
-  // Create X axis ticks
+  // Create X axis ticks - reduce number for better visibility
   const xTicks = useMemo(() => {
-    return data.map((d) => d.year);
-  }, [data]);
+    const allYears = data.map((d) => d.year);
+    // For years 2000-2023, show only every 4th or 5th year on mobile, every 2nd or 3rd year otherwise
+    const step = screenSize === "small" ? 5 : 2;
+    return allYears.filter((_, index) => index % step === 0);
+  }, [data, screenSize]);
 
   // Create Y axis ticks
   const yTicks = useMemo(() => {
@@ -594,19 +605,17 @@ const RenewableEnergyMix = ({
       {/* Main chart container */}
       <div
         ref={chartContainerRef}
-        className={`bg-white  flex flex-col-reverse justify-center  mx-auto w-full max-w-screen-2xl rounded-lg relative ${
+        className={`bg-white py-4  flex flex-col justify-center  mx-auto w-full max-w-screen-2xl rounded-lg relative ${
           isFullscreen ? "fixed inset-0 z-50 max-w-none rounded-none" : ""
         }`}
       >
-        <div className="flex gap-4 mb-4">
+        <div className="flex flex-wrap justify-center  gap-4 mb-4">
           {/* View Type Toggle: Absolute vs Percentage */}
           <div className="inline-flex rounded-md shadow-sm" role="group">
             <button
               type="button"
-              className={`px-4 py-2 text-sm font-medium rounded-l-lg ${
-                viewType === "absolute"
-                  ? "bg-blue-700 text-white"
-                  : "bg-gray-200 text-gray-700"
+              className={`px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200  ${
+                viewType === "absolute" ? "bg-gray-300 " : "bg-gray-100 "
               }`}
               onClick={() => setViewType("absolute")}
             >
@@ -614,10 +623,8 @@ const RenewableEnergyMix = ({
             </button>
             <button
               type="button"
-              className={`px-4 py-2 text-sm font-medium rounded-r-lg ${
-                viewType === "percentage"
-                  ? "bg-blue-700 text-white"
-                  : "bg-gray-200 text-gray-700"
+              className={`px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 ${
+                viewType === "percentage" ? "bg-gray-300 " : "bg-gray-100 "
               }`}
               onClick={() => setViewType("percentage")}
             >
@@ -629,10 +636,8 @@ const RenewableEnergyMix = ({
           <div className="inline-flex rounded-md shadow-sm" role="group">
             <button
               type="button"
-              className={`px-4 py-2 text-sm font-medium rounded-l-lg ${
-                sourceView === "all"
-                  ? "bg-green-700 text-white"
-                  : "bg-gray-200 text-gray-700"
+              className={`px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 ${
+                sourceView === "all" ? "bg-gray-300 " : "bg-gray-100 "
               }`}
               onClick={() => setSourceView("all")}
             >
@@ -640,10 +645,8 @@ const RenewableEnergyMix = ({
             </button>
             <button
               type="button"
-              className={`px-4 py-2 text-sm font-medium rounded-r-lg ${
-                sourceView === "renewables"
-                  ? "bg-green-700 text-white"
-                  : "bg-gray-200 text-gray-700"
+              className={`px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 ${
+                sourceView === "renewables" ? "bg-gray-300 " : "bg-gray-100 "
               }`}
               onClick={() => setSourceView("renewables")}
             >
@@ -739,13 +742,13 @@ const RenewableEnergyMix = ({
 
         {/* The chart */}
         <svg
-          width={width}
+          width={screenSize === "small" ? width - 8 : width}
           height={height + margins.top + margins.bottom}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
         >
           {/* Chart title and subtitle */}
-          {isFullscreen && (
+          {/* {isFullscreen && (
             <g transform={`translate(0, -5)`}>
               <text
                 x={screenSize === "small" ? 50 : margins.left}
@@ -763,15 +766,19 @@ const RenewableEnergyMix = ({
                 </tspan>
               </text>
             </g>
-          )}
+          )} */}
 
-          <g transform={`translate(${margins.left},${margins.top})`}>
+          <g
+            transform={`translate(${
+              screenSize === "small" ? margins.left + 10 : margins.left
+            },${margins.top})`}
+          >
             {/* Chart title */}
             <text
-              x={width / 2}
+              x={width / 2 - margins.left}
               y={-15}
               textAnchor="middle"
-              fontSize="16px"
+              fontSize={screenSize === "small" ? 12 : 16}
               fontWeight="bold"
             >
               Renewable Energy Mix in Africa (2010-2024)
@@ -854,18 +861,6 @@ const RenewableEnergyMix = ({
               />
             ))}
 
-            {/* Legend */}
-            <g transform={`translate(${innerWidth - 100}, 0)`}>
-              {activeKeys.map((key, i) => (
-                <g key={`legend-${key}`} transform={`translate(0, ${i * 20})`}>
-                  <rect width="15" height="15" fill={colors[key]} />
-                  <text x="25" y="12.5" textAnchor="start" fontSize="12px">
-                    {key}
-                  </text>
-                </g>
-              ))}
-            </g>
-
             {/* Invisible overlay for tooltip */}
             <rect
               width={width}
@@ -875,6 +870,19 @@ const RenewableEnergyMix = ({
             />
           </g>
         </svg>
+
+        {/* Legend - MOVED outside of SVG for better placement and responsiveness */}
+        <div className="flex flex-wrap justify-center mt-2 gap-4 px-4">
+          {activeKeys.map((key) => (
+            <div key={`legend-${key}`} className="flex items-center gap-2">
+              <div
+                className="w-4 h-4"
+                style={{ backgroundColor: colors[key] }}
+              ></div>
+              <span className="text-sm">{formatSourceName(key)}</span>
+            </div>
+          ))}
+        </div>
       </div>
       {/* Tooltip */}
       {tooltipData && (
@@ -910,7 +918,7 @@ const RenewableEnergyMix = ({
                 style={{ backgroundColor: item.color }}
               ></div>
               <span>
-                {item.key}: {item?.value?.toFixed(1)}
+                {formatSourceName(item.key)}: {item?.value?.toFixed(1)}
                 {viewType === "absolute" ? " TWh" : "%"}
               </span>
             </div>
