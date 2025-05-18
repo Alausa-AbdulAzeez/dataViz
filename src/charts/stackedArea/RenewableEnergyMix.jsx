@@ -192,7 +192,7 @@ const RenewableEnergyMix = ({
       const total = activeKeys.reduce((sum, key) => sum + yearData[key], 0);
       const newEntry = { year: yearData.year };
       // Calculate percentages for all keys, but we'll only use active ones
-      [...renewableKeys, "Oil"].forEach((key) => {
+      [...renewableKeys, "oil_electricity"].forEach((key) => {
         newEntry[key] = (yearData[key] / total) * 100;
       });
       return newEntry;
@@ -771,18 +771,20 @@ const RenewableEnergyMix = ({
           <g
             transform={`translate(${
               screenSize === "small" ? margins.left + 10 : margins.left
-            },${margins.top})`}
+            },${margins.top - 15})`}
           >
             {/* Chart title */}
-            <text
-              x={width / 2 - margins.left}
-              y={-15}
-              textAnchor="middle"
-              fontSize={screenSize === "small" ? 12 : 16}
-              fontWeight="bold"
-            >
-              Renewable Energy Mix in Africa (2010-2024)
-            </text>
+            {isFullscreen && (
+              <text
+                x={width / 2 - margins.left}
+                y={-15}
+                textAnchor="middle"
+                fontSize={screenSize === "small" ? 12 : 16}
+                fontWeight="bold"
+              >
+                Renewable Energy Mix in Africa (2000 - 2023)
+              </text>
+            )}
 
             {/* X Axis */}
             <g transform={`translate(0,${height})`}>
@@ -802,9 +804,9 @@ const RenewableEnergyMix = ({
                 </g>
               ))}
               {/* X Axis Label */}
-              <text x={width / 2} y={40} textAnchor="middle" fontSize="14px">
+              {/* <text x={width / 2} y={40} textAnchor="middle" fontSize="14px">
                 Year
-              </text>
+              </text> */}
             </g>
 
             {/* Y Axis */}

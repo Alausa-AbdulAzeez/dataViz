@@ -571,11 +571,17 @@ export default function AfricaSolarSurge() {
 
         {activeTab === "impact" && (
           <section>
-            <h2 className="text-3xl font-bold mb-6">Energy Impact Analysis</h2>
+            <h2 className="text-3xl font-bold mb-6">
+              Africa's Energy Landscape: Tracking the Shift (2000 - 2023)
+            </h2>
             <p className="text-gray-700 mb-6">
-              Solar energy has made significant contributions to Africa's energy
-              landscape, increasing electricity access and reducing reliance on
-              fossil fuels.
+              Over the past two decades, Africa's electricity generation
+              landscape has gradually shifted. While hydropower remains
+              dominant, sources like solar and wind have grown from obscurity to
+              form an increasingly visible share of the mix. This section
+              explores the continent’s changing energy dynamics — from solar’s
+              emerging role to the broader composition of power generation — and
+              the practical realities driving these trends.
             </p>
 
             <div className="bg-white p-6 rounded-lg shadow-md mb-8">
@@ -686,10 +692,10 @@ export default function AfricaSolarSurge() {
                 African communities
               </p>
             </div>
-            <div className="bg-white p-6 rounded-lg shadow-md mb-8">
+            <div className="bg-white p-1 md:p-6 rounded-lg shadow-md mb-8">
               <div className="mb-2 flex h-fit items-center gap-3">
                 <h3 className="text-sm md:text-xl font-semibold flex-1">
-                  Renewable Energy Mix{" "}
+                  Africa’s Electricity Generation Mix: 2000–2023{" "}
                 </h3>
                 {/* RHS - Action buttons */}
                 <div className="w-fit h-8 flex justify-center gap-2 ">
@@ -785,8 +791,15 @@ export default function AfricaSolarSurge() {
               </div>
 
               <p className="text-xs md:text-base mt-4 text-gray-700">
-                Comparing solar's contribution to other renewable energy sources
-                across Africa.
+                Within this selected group of energy sources, solar power's role
+                has grown significantly —{" "}
+                <b> growing from near-zero to nearly 10% by 2023</b>.{" "}
+                <b>Hydropower continues to dominate at over 50%</b>, and{" "}
+                <b>wind has matched solar's share in recent years</b>.This view
+                of renewables (and optionally oil) shows Africa's energy
+                diversification in progress, with scalable solutions like solar
+                steadily gaining ground, even as they remain a smaller portion
+                of total electricity generation.
               </p>
             </div>
           </section>
