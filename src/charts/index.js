@@ -5,10 +5,12 @@ import SolarShare from "./bar/SolarShare";
 import SolarShareInGeneration from "./bar/SolarShareInGeneration";
 import AfricaSolarChoropleth from "./choropleth/AfricaSolarChoropleth";
 import RenewableEnergyMix from "./stackedArea/RenewableEnergyMix";
+import SolarSurgeCountryComparison from "./bar/SolarSurgeCountryComparison";
 
 export {
   WorldPopulation,
   AfricaSolarChoropleth,
+  SolarSurgeCountryComparison,
   BarChart,
   SolarShareInGeneration,
   AfricasSolarSurge,

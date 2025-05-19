@@ -12,6 +12,7 @@ import {
   RenewableEnergyMix,
   SolarShare,
   SolarShareInGeneration,
+  SolarSurgeCountryComparison,
 } from "../charts";
 import { csv } from "d3";
 import { Icon } from "@iconify/react";
@@ -96,7 +97,6 @@ export default function AfricaSolarSurge() {
 
       setData(overviewData);
       setAdoptionData(adoption_data);
-      console.log(adoption_data);
       setFullData(newRes);
       setLoading(false);
     } catch (error) {
@@ -192,6 +192,10 @@ export default function AfricaSolarSurge() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    console.log(adoptionData);
+  }, [adoptionData]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -804,7 +808,7 @@ export default function AfricaSolarSurge() {
             </div>
           </section>
         )}
-
+        {/* Country tab */}
         {activeTab === "country" && (
           <section>
             <h2 className="text-3xl font-bold mb-6">Country Comparison</h2>
@@ -813,22 +817,111 @@ export default function AfricaSolarSurge() {
               influenced by factors such as policy frameworks, investment
               climates, and natural resources.
             </p>
-
             <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-              <h3 className="text-xl font-semibold mb-4">
-                Top Solar Producing Countries (2022)
-              </h3>
-              <div className="bg-gray-100 h-64 flex items-center justify-center rounded-lg border border-gray-200">
-                <div className="text-center text-gray-500">
-                  <BarChartIcon className="h-12 w-12 mx-auto mb-2" />
-                  <p className="text-sm font-medium">
-                    Horizontal Bar Chart: Top 10 Countries by Solar Consumption
-                  </p>
+              <div className="mb-2 flex h-fit items-center gap-3">
+                <h3 className="text-sm md:text-xl font-semibold flex-1">
+                  Africa's Growing Solar Share of Electricity (2000-2023)
+                </h3>
+                {/* RHS - Action buttons */}
+                <div className="w-fit h-8 flex justify-center gap-2 ">
+                  {/* Fullscreen toggle button */}
+                  <div
+                    onClick={toggleFullscreen}
+                    onMouseEnter={() => {
+                      setIconTooltip({
+                        visible: true,
+                        content: isFullscreen
+                          ? `Exit Fullscreen`
+                          : `Fullscreen`,
+                      });
+                    }}
+                    onMouseLeave={() => {
+                      setIconTooltip({
+                        visible: false,
+                        content: ``,
+                      });
+                    }}
+                    className="relative w-fit rounded-sm hover:bg-gray-300 p-1.5 bg-gray-200 flex items-center justify-center cursor-pointer"
+                  >
+                    {iconTooltip?.visible &&
+                      (iconTooltip?.content === "Fullscreen" ||
+                        iconTooltip?.content === "Exit Fullscreen") && (
+                        <div className="absolute bg-white border border-[#ccc] px-[10px] py-[6px] -top-9 text-xs rounded-sm">
+                          {iconTooltip?.content}
+                        </div>
+                      )}
+                    <Icon
+                      icon={
+                        isFullscreen
+                          ? "material-symbols-light:fullscreen-exit"
+                          : "material-symbols-light:fullscreen"
+                      }
+                      className="w-5 h-5"
+                    />
+                  </div>
+
+                  {/* Download button */}
+                  <div
+                    onClick={() => setIsModalOpen(true)}
+                    onMouseEnter={() => {
+                      setIconTooltip({
+                        visible: true,
+                        content: `Download`,
+                      });
+                    }}
+                    onMouseLeave={() => {
+                      setIconTooltip({
+                        visible: false,
+                        content: ``,
+                      });
+                    }}
+                    className="relative rounded-sm hover:bg-gray-300 p-1.5 bg-gray-200 flex items-center justify-center cursor-pointer"
+                  >
+                    {iconTooltip?.visible &&
+                      iconTooltip?.content === "Download" && (
+                        <div className="absolute bg-white border border-[#ccc] px-[10px] py-[6px] -top-9 text-xs rounded-sm">
+                          {iconTooltip?.content}
+                        </div>
+                      )}
+                    <Icon
+                      icon={"material-symbols-light:download-sharp"}
+                      className="w-5 h-5"
+                    />
+                  </div>
                 </div>
               </div>
-              <p className="mt-4 text-gray-700">
-                This chart ranks African countries by their total solar energy
-                consumption, highlighting the leaders in solar adoption.
+
+              <div className=" min-h-64 flex items-center justify-center rounded-lg border border-gray-200">
+                {/* Loading state */}
+                {loading ? (
+                  <div className="w-full flex justify-center items-center py-20">
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-yellow-500"></div>
+                  </div>
+                ) : (
+                  // Bar chart
+                  <SolarSurgeCountryComparison
+                    data={adoptionData}
+                    adoptionData={adoptionData}
+                    title="Solar Generation"
+                    width={900}
+                    height={500}
+                    years={{ min: 2000, max: 2023 }}
+                    defaultYear={2023}
+                    colorByRegion={true}
+                    enableCompareMode={true}
+                    enableSharing={true}
+                  />
+                )}
+              </div>
+
+              <p className="text-xs md:text-base mt-4 text-gray-700">
+                In <b>2000</b>, solar power contributed virtually <b>nothing</b>{" "}
+                to Africa’s electricity generation. By <b>2023</b>, it had grown
+                to <b>3.09%</b> — a modest but meaningful rise. This growth is
+                less about environmental idealism and more about necessityThis
+                growth also reflects the growing recognition of solar as a
+                reliable and increasingly accessible power solution for many
+                African communities
               </p>
             </div>
 
@@ -882,20 +975,111 @@ export default function AfricaSolarSurge() {
             </p>
 
             <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-              <h3 className="text-xl font-semibold mb-4">
-                Projected Solar Growth (Based on Historical Trends)
-              </h3>
-              <div className="bg-gray-100 h-64 flex items-center justify-center rounded-lg border border-gray-200">
-                <div className="text-center text-gray-500">
-                  <TrendingUp className="h-12 w-12 mx-auto mb-2" />
-                  <p className="text-sm font-medium">
-                    Line Chart with Projections: Estimated Growth to 2030
-                  </p>
+              <div className="mb-2 flex h-fit items-center gap-3">
+                <h3 className="text-sm md:text-xl font-semibold flex-1">
+                  Africa's Growing Solar Share of Electricity (2000-2023)
+                </h3>
+                {/* RHS - Action buttons */}
+                <div className="w-fit h-8 flex justify-center gap-2 ">
+                  {/* Fullscreen toggle button */}
+                  <div
+                    onClick={toggleFullscreen}
+                    onMouseEnter={() => {
+                      setIconTooltip({
+                        visible: true,
+                        content: isFullscreen
+                          ? `Exit Fullscreen`
+                          : `Fullscreen`,
+                      });
+                    }}
+                    onMouseLeave={() => {
+                      setIconTooltip({
+                        visible: false,
+                        content: ``,
+                      });
+                    }}
+                    className="relative w-fit rounded-sm hover:bg-gray-300 p-1.5 bg-gray-200 flex items-center justify-center cursor-pointer"
+                  >
+                    {iconTooltip?.visible &&
+                      (iconTooltip?.content === "Fullscreen" ||
+                        iconTooltip?.content === "Exit Fullscreen") && (
+                        <div className="absolute bg-white border border-[#ccc] px-[10px] py-[6px] -top-9 text-xs rounded-sm">
+                          {iconTooltip?.content}
+                        </div>
+                      )}
+                    <Icon
+                      icon={
+                        isFullscreen
+                          ? "material-symbols-light:fullscreen-exit"
+                          : "material-symbols-light:fullscreen"
+                      }
+                      className="w-5 h-5"
+                    />
+                  </div>
+
+                  {/* Download button */}
+                  <div
+                    onClick={() => setIsModalOpen(true)}
+                    onMouseEnter={() => {
+                      setIconTooltip({
+                        visible: true,
+                        content: `Download`,
+                      });
+                    }}
+                    onMouseLeave={() => {
+                      setIconTooltip({
+                        visible: false,
+                        content: ``,
+                      });
+                    }}
+                    className="relative rounded-sm hover:bg-gray-300 p-1.5 bg-gray-200 flex items-center justify-center cursor-pointer"
+                  >
+                    {iconTooltip?.visible &&
+                      iconTooltip?.content === "Download" && (
+                        <div className="absolute bg-white border border-[#ccc] px-[10px] py-[6px] -top-9 text-xs rounded-sm">
+                          {iconTooltip?.content}
+                        </div>
+                      )}
+                    <Icon
+                      icon={"material-symbols-light:download-sharp"}
+                      className="w-5 h-5"
+                    />
+                  </div>
                 </div>
               </div>
-              <p className="mt-4 text-gray-700">
-                Based on historical growth patterns, this projection shows
-                potential solar energy adoption scenarios through 2030.
+
+              <div className=" min-h-64 flex items-center justify-center rounded-lg border border-gray-200">
+                {/* Loading state */}
+                {loading ? (
+                  <div className="w-full flex justify-center items-center py-20">
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-yellow-500"></div>
+                  </div>
+                ) : (
+                  // Line chart
+                  <SolarShareInGeneration
+                    data={data}
+                    THEME={THEME}
+                    isFullscreen={isFullscreen}
+                    screenSize={screenSize}
+                    setScreenSize={setScreenSize}
+                    toggleFullscreen={toggleFullscreen}
+                    iconTooltip={iconTooltip}
+                    setIconTooltip={setIconTooltip}
+                    chartContainerRef={chartContainerRef}
+                    isModalOpen={isModalOpen}
+                    setIsModalOpen={setIsModalOpen}
+                  />
+                )}
+              </div>
+
+              <p className="text-xs md:text-base mt-4 text-gray-700">
+                In <b>2000</b>, solar power contributed virtually <b>nothing</b>{" "}
+                to Africa’s electricity generation. By <b>2023</b>, it had grown
+                to <b>3.09%</b> — a modest but meaningful rise. This growth is
+                less about environmental idealism and more about necessityThis
+                growth also reflects the growing recognition of solar as a
+                reliable and increasingly accessible power solution for many
+                African communities
               </p>
             </div>
 
