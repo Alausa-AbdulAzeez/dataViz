@@ -13,9 +13,12 @@ const SolarSurgeCountryComparison = ({
   colorByRegion = false,
   regionsMap = {}, // Map of countries to regions
   regionColors = {}, // Map of regions to colors
-  defaultColor = "#4f46e5", // Default color if not using colorByRegion
+  defaultColor = "#f97316", // Default color if not using colorByRegion
   enableCompareMode = false,
   onDownload = () => {},
+  isModalOpen,
+  chartContainerRef,
+  isFullscreen,
 }) => {
   // State management
   const [currentYear, setCurrentYear] = useState(defaultYear);
@@ -23,14 +26,11 @@ const SolarSurgeCountryComparison = ({
   const [hoveredCountry, setHoveredCountry] = useState(null);
   const [showOnlySelected, setShowOnlySelected] = useState(false);
   const [selectedCountries, setSelectedCountries] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeDownloadTab, setActiveDownloadTab] = useState("Chart");
   const [showSort, setShowSort] = useState(false);
   const [selectedSortType, setSelectedSortType] = useState(
     "Sort by Power Generation"
   );
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const chartContainerRef = useRef(null);
   const [selectedSortForm, setSelectedSortForm] = useState("Sort Descending");
   const [tooltip, setTooltip] = useState({
     visible: false,
@@ -38,10 +38,11 @@ const SolarSurgeCountryComparison = ({
     y: 0,
     content: "",
   });
-  const [iconTooltip, setIconTooltip] = useState({
-    visible: false,
-    content: "",
+  const [dataCardPos, setDataCardPos] = useState({
+    x: 0,
+    y: 0,
   });
+
   const [searchTerm, setSearchTerm] = useState("");
   const [zoomRange, setZoomRange] = useState(null);
   const [isDataCardVisible, setIsDataCardVisible] = useState(false);
@@ -112,11 +113,27 @@ const SolarSurgeCountryComparison = ({
     } else {
       // Apply search and sorting logic here...
       if (searchTerm) {
-        currentYearFiltered = currentYearFiltered.filter((d) =>
-          d.country.toLowerCase().includes(searchTerm.toLowerCase())
+        currentYearFiltered = data?.filter(
+          (datum) =>
+            datum?.year === currentYear &&
+            datum.country.toLowerCase().includes(searchTerm.toLowerCase())
         );
       }
       // Apply sorting...
+      // Apply sorting
+      if (selectedSortType === "Sort by Power Generation") {
+        currentYearFiltered.sort((a, b) => {
+          return selectedSortForm === "Sort Descending"
+            ? b["solar_electricity"] - a["solar_electricity"]
+            : a["solar_electricity"] - b["solar_electricity"];
+        });
+      } else if (selectedSortType === "Sort Alphabetically") {
+        currentYearFiltered.sort((a, b) => {
+          return selectedSortForm === "Sort Descending"
+            ? b.country.localeCompare(a.country)
+            : a.country.localeCompare(b.country);
+        });
+      }
     }
 
     // Now get compare year data for the same countries
@@ -385,7 +402,10 @@ const SolarSurgeCountryComparison = ({
       if (chartContainerRef.current) {
         const containerWidth = chartContainerRef.current.clientWidth;
         setChartDimensions({
-          width: containerWidth * 0.9, // 90% of container width
+          width:
+            screenSize === "small"
+              ? containerWidth * 1.1
+              : containerWidth * 0.9, // 90% of container width
           height: Math.min(Math.max(containerWidth * 0.6, 300), 600), // Responsive height between 300-600px
         });
       }
@@ -401,7 +421,6 @@ const SolarSurgeCountryComparison = ({
     return () => window.removeEventListener("resize", updateDimensions);
   }, [chartContainerRef, isFullscreen]);
 
-  console.log("aa");
   return (
     <div className="relative w-full min-h-fit h-auto">
       {/* Hidden chart for export */}
@@ -409,7 +428,12 @@ const SolarSurgeCountryComparison = ({
         <div className="px-3 my-10 mx-auto w-[1000px] rounded-md relative">
           <div className="mx-auto w-[90%] h-full py-5">
             <div className="mb-3 flex justify-between">
-              <div className="text-lg font-semibold">
+              {console.log(compareYear)}
+              <div
+                className={`${
+                  compareYear ? "opacity-100" : "opacity-0"
+                } text-lg font-semibold`}
+              >
                 {title}, {currentYear}
                 {compareYear && ` vs ${compareYear}`}
               </div>
@@ -643,7 +667,24 @@ const SolarSurgeCountryComparison = ({
 
         {/* Data Card */}
         {isDataCardVisible && dataCardInfo && (
-          <div className="absolute z-30 bg-white shadow-lg border rounded-md p-4 w-64 right-0 top-12">
+          <div
+            style={{
+              left:
+                screenSize === "small"
+                  ? "calc(50% - 128px)"
+                  : dataCardPos.x + 400 > window.innerWidth
+                  ? `${dataCardPos.x - 420}px`
+                  : `${dataCardPos.x + 20}px`,
+              top:
+                screenSize === "small"
+                  ? window.innerHeight - 210
+                  : dataCardPos.y + 200 > window.innerHeight
+                  ? `${dataCardPos.y - 200}px`
+                  : `${dataCardPos.y}px`,
+              position: screenSize === "small" ? "fixed" : "fixed",
+            }}
+            className="z-30 bg-white shadow-lg border rounded-md p-4 w-64 right-0 top-12"
+          >
             <div className="flex justify-between items-center">
               <h3 className="font-semibold">{dataCardInfo.country}</h3>
               <button
@@ -693,87 +734,128 @@ const SolarSurgeCountryComparison = ({
 
         <div className="mx-auto w-full md:w-[90%] h-full py-5">
           {/* Controls bar */}
-          <div className="mb-4 flex flex-wrap items-center justify-end gap-2">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+            {/* Compare mode toggle */}
+            {enableCompareMode && screenSize !== "small" && (
+              <div className="flex items-center">
+                <div className="mr-2 text-sm">Compare with year:</div>
+                <select
+                  value={compareYear || ""}
+                  onChange={(e) =>
+                    toggleCompareMode(
+                      e.target.value ? parseInt(e.target.value) : null
+                    )
+                  }
+                  className="text-sm border rounded py-1 px-2"
+                >
+                  <option value="">None</option>
+                  {Array.from(
+                    { length: years.max - years.min + 1 },
+                    (_, i) => years.min + i
+                  )
+                    .filter((year) => year !== currentYear)
+                    .map((year) => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    ))}
+                </select>
+              </div>
+            )}
+
             {/* Search */}
-            <div className="relative">
+            <div className="max-w-[300px] bg-neutral-100 h-10 flex items-center justify-center px-4 gap-[10px] w-full rounded-[6px] relative">
+              <Icon
+                icon={"material-symbols:search-rounded"}
+                className="w-5 h-5 text-textColor-80"
+              />
               <input
                 type="text"
-                placeholder="Search countries..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="text-sm py-1 px-2 border rounded-md"
+                placeholder="Search countries..."
+                className="h-full flex-1 text-sm text-neutral-600 placeholder:text-neutral-500 outline-none border-none bg-transparent"
               />
               {searchTerm && (
-                <button
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500"
+                <Icon
+                  icon="material-symbols:close-rounded"
+                  className="w-5 h-5 text-textColor-80 cursor-pointer"
                   onClick={() => setSearchTerm("")}
-                >
-                  <Icon icon="ic:round-close" width="16" height="16" />
-                </button>
+                />
               )}
             </div>
           </div>
-          {/* Compare mode toggle */}
-          {enableCompareMode && screenSize !== "small" && (
-            <div className="mb-4 flex items-center">
-              <div className="mr-2 text-sm">Compare with year:</div>
-              <select
-                value={compareYear || ""}
-                onChange={(e) =>
-                  toggleCompareMode(
-                    e.target.value ? parseInt(e.target.value) : null
-                  )
-                }
-                className="text-sm border rounded py-1 px-2"
-              >
-                <option value="">None</option>
-                {Array.from(
-                  { length: years.max - years.min + 1 },
-                  (_, i) => years.min + i
-                )
-                  .filter((year) => year !== currentYear)
-                  .map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))}
-              </select>
-            </div>
-          )}
 
           {/* Selection indicator */}
           {selectedCountries.length > 0 && (
-            <div className="mb-4 flex flex-wrap items-center gap-2">
-              <span className="text-sm">Selected:</span>
-              {selectedCountries.map((country) => (
-                <div
-                  key={country}
-                  className="flex items-center bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
-                >
-                  {country}
-                  <button
-                    className="ml-1 text-blue-800"
-                    onClick={() => toggleCountrySelection(country)}
+            <div className="mb-4 flex items-center flex-wrap justify-between gap-3 md:gap-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm">Selected:</span>
+                {selectedCountries.map((country) => (
+                  <div
+                    key={country}
+                    className="flex items-center bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
                   >
-                    <Icon icon="ic:round-close" width="14" height="14" />
-                  </button>
-                </div>
-              ))}
-              <button
-                className="text-xs text-gray-600 underline ml-2"
-                onClick={() => {
-                  setShowOnlySelected(false);
-                  setSelectedCountries([]);
-                }}
-              >
-                Clear all
-              </button>
+                    {country}
+                    <button
+                      className="ml-1 text-blue-800"
+                      onClick={() => toggleCountrySelection(country)}
+                    >
+                      <Icon icon="ic:round-close" width="14" height="14" />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  className="text-xs text-gray-600 underline ml-2"
+                  onClick={() => {
+                    setShowOnlySelected(false);
+                    setSelectedCountries([]);
+                  }}
+                >
+                  Clear all
+                </button>
+              </div>
+              <div className=" flex items-center gap-2">
+                <button
+                  className="text-sm py-1 px-3 bg-gray-100 hover:bg-gray-200 rounded flex items-center gap-1"
+                  onClick={() => {
+                    // Toggle between filtered and unfiltered view
+                    // You can implement this by adding a state variable
+                    setShowOnlySelected(!showOnlySelected);
+                  }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M4 12a8 8 0 0 1 8-8"></path>
+                    <path d="M12 4a8 8 0 0 1 8 8"></path>
+                    <path d="M12 20a8 8 0 0 1-8-8"></path>
+                    <path d="M20 12a8 8 0 0 1-8 8"></path>
+                    <circle cx="12" cy="12" r="2"></circle>
+                  </svg>
+                  {showOnlySelected
+                    ? "Show all countries"
+                    : "Focus on selected"}
+                </button>
+              </div>
             </div>
           )}
 
           {/* Chart header */}
           <div className="mb-3 flex flex-wrap justify-between items-center gap-2">
-            <div className="text-lg font-semibold">
+            <div
+              className={`${
+                compareYear ? "opacity-100" : "opacity-0"
+              } text-lg font-semibold`}
+            >
               {title}, {currentYear}
               {compareYear && ` vs ${compareYear}`}
             </div>
@@ -829,7 +911,7 @@ const SolarSurgeCountryComparison = ({
           {/* The chart */}
           {filteredData?.length > 0 ? (
             <svg width={width} height={height}>
-              <g transform={`translate(${margins.left}, ${margins.top})`}>
+              <g transform={`translate(${margins.left - 25}, ${margins.top})`}>
                 {/* country labels */}
                 {filteredData?.map((datum) => (
                   <text
@@ -868,28 +950,24 @@ const SolarSurgeCountryComparison = ({
                     }`}
                     onMouseEnter={() => setHoveredCountry(datum.country)}
                     onMouseMove={(e) => {
-                      const svgRect =
-                        e.currentTarget.ownerSVGElement.getBoundingClientRect();
                       setTooltip({
                         visible: true,
-                        x: e.clientX - svgRect.left + 10,
-                        y: e.clientY,
-                        content: `${datum.country}: ${
-                          datum["solar_electricity"] + " KWh"
-                        }`,
+                        x: e.clientX + 12, // offset a bit to the right of cursor
+                        y: e.clientY + 12, // offset slightly below the cursor
+                        content: `${datum.country}: ${datum["solar_electricity"]} KWh`,
                       });
                     }}
                     onMouseLeave={() => {
                       setHoveredCountry(null);
                       setTooltip({ visible: false, x: 0, y: 0, content: "" });
                     }}
-                    onClick={() => {
+                    onClick={(e) => {
+                      setDataCardPos({ x: e.clientX, y: e.clientY });
                       showDataCard(datum.country);
                     }}
                   />
                 ))}
-                {console.log(filteredData)}
-                {console.log(compareYearData)}
+
                 {/* Bars for compare year if enabled */}
                 {compareYear &&
                   compareYearData?.map((datum) => (
@@ -945,7 +1023,7 @@ const SolarSurgeCountryComparison = ({
                       }`}
                       fontWeight={400}
                     >
-                      {datum["solar_electricity"]}
+                      {datum["solar_electricity"]} KWh
                     </text>
                   ))}
               </g>
@@ -959,7 +1037,7 @@ const SolarSurgeCountryComparison = ({
             </div>
           )}
 
-          {selectedCountries.length > 0 && (
+          {/* {selectedCountries.length > 0 && (
             <div className="mt-4 flex items-center gap-2">
               <button
                 className="text-sm py-1 px-3 bg-gray-100 hover:bg-gray-200 rounded flex items-center gap-1"
@@ -989,15 +1067,14 @@ const SolarSurgeCountryComparison = ({
                 {showOnlySelected ? "Show all countries" : "Focus on selected"}
               </button>
             </div>
-          )}
+          )} */}
 
           {/* Tooltip */}
           {tooltip.visible && (
             <div
-              className="absolute text-xs bg-white shadow-md px-2 py-1 rounded border border-gray-300 pointer-events-none z-30"
+              className="fixed text-xs bg-white shadow-md px-2 py-1 rounded border border-gray-300 pointer-events-none z-30"
               style={{
-                position: "absolute",
-                left: `${tooltip.x + margins.left}px`,
+                left: `${tooltip.x + 10}px`,
                 top: `${tooltip.y}px`,
                 backgroundColor: "white",
                 border: "1px solid #ccc",

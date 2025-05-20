@@ -102,7 +102,6 @@ const RenewableEnergyMix = ({
   const [selectedPoint, setSelectedPoint] = useState(null);
   const chartRef = useRef(null);
   const [activeDownloadTab, setActiveDownloadTab] = useState("Chart");
-  console.log(data);
   const [chartDimensions, setChartDimensions] = useState({
     width: 0,
     height: 0,

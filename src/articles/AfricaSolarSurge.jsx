@@ -777,7 +777,7 @@ export default function AfricaSolarSurge() {
                     <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-yellow-500"></div>
                   </div>
                 ) : (
-                  // Line chart
+                  // Stacked Area chart
                   <RenewableEnergyMix
                     data={data}
                     THEME={THEME}
@@ -908,8 +908,13 @@ export default function AfricaSolarSurge() {
                     years={{ min: 2000, max: 2023 }}
                     defaultYear={2023}
                     colorByRegion={true}
+                    isFullscreen={isFullscreen}
                     enableCompareMode={true}
                     enableSharing={true}
+                    toggleFullscreen={toggleFullscreen}
+                    chartContainerRef={chartContainerRef}
+                    isModalOpen={isModalOpen}
+                    setIsModalOpen={setIsModalOpen}
                   />
                 )}
               </div>
@@ -926,24 +931,6 @@ export default function AfricaSolarSurge() {
             </div>
 
             <div className="grid md:grid-cols-2 gap-6 mb-8">
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold mb-4">
-                  Solar Share in National Energy Mix
-                </h3>
-                <div className="bg-gray-100 h-64 flex items-center justify-center rounded-lg border border-gray-200">
-                  <div className="text-center text-gray-500">
-                    <PieChartIcon className="h-12 w-12 mx-auto mb-2" />
-                    <p className="text-sm font-medium">
-                      Multiple Pie Charts: Solar's Share in Selected Countries
-                    </p>
-                  </div>
-                </div>
-                <p className="mt-4 text-gray-700">
-                  Comparing the percentage of solar energy in the total energy
-                  mix across different African countries.
-                </p>
-              </div>
-
               <div className="bg-white p-6 rounded-lg shadow-md">
                 <h3 className="text-xl font-semibold mb-4">
                   Growth Rate Comparison
