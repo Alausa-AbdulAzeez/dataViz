@@ -10,6 +10,7 @@ import {
 import {
   AfricaSolarChoropleth,
   RenewableEnergyMix,
+  SolarGrowthRateComparison,
   SolarShare,
   SolarShareInGeneration,
   SolarSurgeCountryComparison,
@@ -930,24 +931,108 @@ export default function AfricaSolarSurge() {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6 mb-8">
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold mb-4">
-                  Growth Rate Comparison
+            <div className="bg-white p-6 rounded-lg shadow-md mb-8">
+              <div className="mb-2 flex h-fit items-center gap-3">
+                <h3 className="text-sm md:text-xl font-semibold flex-1">
+                  Growth Rate Comparison{" "}
                 </h3>
-                <div className="bg-gray-100 h-64 flex items-center justify-center rounded-lg border border-gray-200">
-                  <div className="text-center text-gray-500">
-                    <TrendingUp className="h-12 w-12 mx-auto mb-2" />
-                    <p className="text-sm font-medium">
-                      Line Chart: Growth Trajectories for Key Countries
-                    </p>
+                {/* RHS - Action buttons */}
+                <div className="w-fit h-8 flex justify-center gap-2 ">
+                  {/* Fullscreen toggle button */}
+                  <div
+                    onClick={toggleFullscreen}
+                    onMouseEnter={() => {
+                      setIconTooltip({
+                        visible: true,
+                        content: isFullscreen
+                          ? `Exit Fullscreen`
+                          : `Fullscreen`,
+                      });
+                    }}
+                    onMouseLeave={() => {
+                      setIconTooltip({
+                        visible: false,
+                        content: ``,
+                      });
+                    }}
+                    className="relative w-fit rounded-sm hover:bg-gray-300 p-1.5 bg-gray-200 flex items-center justify-center cursor-pointer"
+                  >
+                    {iconTooltip?.visible &&
+                      (iconTooltip?.content === "Fullscreen" ||
+                        iconTooltip?.content === "Exit Fullscreen") && (
+                        <div className="absolute bg-white border border-[#ccc] px-[10px] py-[6px] -top-9 text-xs rounded-sm">
+                          {iconTooltip?.content}
+                        </div>
+                      )}
+                    <Icon
+                      icon={
+                        isFullscreen
+                          ? "material-symbols-light:fullscreen-exit"
+                          : "material-symbols-light:fullscreen"
+                      }
+                      className="w-5 h-5"
+                    />
+                  </div>
+
+                  {/* Download button */}
+                  <div
+                    onClick={() => setIsModalOpen(true)}
+                    onMouseEnter={() => {
+                      setIconTooltip({
+                        visible: true,
+                        content: `Download`,
+                      });
+                    }}
+                    onMouseLeave={() => {
+                      setIconTooltip({
+                        visible: false,
+                        content: ``,
+                      });
+                    }}
+                    className="relative rounded-sm hover:bg-gray-300 p-1.5 bg-gray-200 flex items-center justify-center cursor-pointer"
+                  >
+                    {iconTooltip?.visible &&
+                      iconTooltip?.content === "Download" && (
+                        <div className="absolute bg-white border border-[#ccc] px-[10px] py-[6px] -top-9 text-xs rounded-sm">
+                          {iconTooltip?.content}
+                        </div>
+                      )}
+                    <Icon
+                      icon={"material-symbols-light:download-sharp"}
+                      className="w-5 h-5"
+                    />
                   </div>
                 </div>
-                <p className="mt-4 text-gray-700">
-                  This chart shows how solar adoption has grown at different
-                  rates across selected African nations.
-                </p>
               </div>
+
+              <div className=" min-h-64 flex items-center justify-center rounded-lg border border-gray-200">
+                {/* Loading state */}
+                {loading ? (
+                  <div className="w-full flex justify-center items-center py-20">
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-yellow-500"></div>
+                  </div>
+                ) : (
+                  // Line chart
+                  <SolarGrowthRateComparison
+                    data={data}
+                    THEME={THEME}
+                    isFullscreen={isFullscreen}
+                    screenSize={screenSize}
+                    setScreenSize={setScreenSize}
+                    toggleFullscreen={toggleFullscreen}
+                    iconTooltip={iconTooltip}
+                    setIconTooltip={setIconTooltip}
+                    chartContainerRef={chartContainerRef}
+                    isModalOpen={isModalOpen}
+                    setIsModalOpen={setIsModalOpen}
+                  />
+                )}
+              </div>
+
+              <p className="text-xs md:text-base mt-4 text-gray-700">
+                This chart shows how solar adoption has grown at different rates
+                across selected African nations.
+              </p>
             </div>
           </section>
         )}
