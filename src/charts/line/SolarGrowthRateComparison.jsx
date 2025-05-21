@@ -11,52 +11,623 @@ const SolarElectricityChart = ({
     width: 0,
     height: 0,
   });
+  const [tooltip, setTooltip] = useState(null);
+  const [activeCountry, setActiveCountry] = useState(null);
 
   const data = [
     // Nigeria
-    { country: "Nigeria", solar_electricity: 0.5, year: 2018 },
-    { country: "Nigeria", solar_electricity: 0.7, year: 2019 },
-    { country: "Nigeria", solar_electricity: 0.8, year: 2020 },
-    { country: "Nigeria", solar_electricity: 1.0, year: 2021 },
-    { country: "Nigeria", solar_electricity: 1.1, year: 2022 },
-    { country: "Nigeria", solar_electricity: 1.2, year: 2023 },
+    {
+      country: "Nigeria",
+      year: 2000,
+      solar_electricity: 0,
+    },
+    {
+      country: "Nigeria",
+      year: 2001,
+      solar_electricity: 0,
+    },
+    {
+      country: "Nigeria",
+      year: 2002,
+      solar_electricity: 0,
+    },
+    {
+      country: "Nigeria",
+      year: 2003,
+      solar_electricity: 0,
+    },
+    {
+      country: "Nigeria",
+      year: 2004,
+      solar_electricity: 0,
+    },
+    {
+      country: "Nigeria",
+      year: 2005,
+      solar_electricity: 0,
+    },
+    {
+      country: "Nigeria",
+      year: 2006,
+      solar_electricity: 0,
+    },
+    {
+      country: "Nigeria",
+      year: 2007,
+      solar_electricity: 0,
+    },
+    {
+      country: "Nigeria",
+      year: 2008,
+      solar_electricity: 0,
+    },
+    {
+      country: "Nigeria",
+      year: 2009,
+      solar_electricity: 0,
+    },
+    {
+      country: "Nigeria",
+      year: 2010,
+      solar_electricity: 0,
+    },
+    {
+      country: "Nigeria",
+      year: 2011,
+      solar_electricity: 0,
+    },
+    {
+      country: "Nigeria",
+      year: 2012,
+      solar_electricity: 0.02,
+    },
+    {
+      country: "Nigeria",
+      year: 2013,
+      solar_electricity: 0.02,
+    },
+    {
+      country: "Nigeria",
+      year: 2014,
+      solar_electricity: 0.02,
+    },
+    {
+      country: "Nigeria",
+      year: 2015,
+      solar_electricity: 0.03,
+    },
+    {
+      country: "Nigeria",
+      year: 2016,
+      solar_electricity: 0.03,
+    },
+    {
+      country: "Nigeria",
+      year: 2017,
+      solar_electricity: 0.03,
+    },
+    {
+      country: "Nigeria",
+      year: 2018,
+      solar_electricity: 0.03,
+    },
+    {
+      country: "Nigeria",
+      year: 2019,
+      solar_electricity: 0.04,
+    },
+    {
+      country: "Nigeria",
+      year: 2020,
+      solar_electricity: 0.04,
+    },
+    {
+      country: "Nigeria",
+      year: 2021,
+      solar_electricity: 0.05,
+    },
+    {
+      country: "Nigeria",
+      year: 2022,
+      solar_electricity: 0.05,
+    },
+    {
+      country: "Nigeria",
+      year: 2023,
+      solar_electricity: 0.05,
+    },
 
     // Kenya
-    { country: "Kenya", solar_electricity: 0.9, year: 2018 },
-    { country: "Kenya", solar_electricity: 1.2, year: 2019 },
-    { country: "Kenya", solar_electricity: 1.8, year: 2020 },
-    { country: "Kenya", solar_electricity: 2.3, year: 2021 },
-    { country: "Kenya", solar_electricity: 2.7, year: 2022 },
-    { country: "Kenya", solar_electricity: 3.1, year: 2023 },
-
+    {
+      country: "Kenya",
+      year: 2000,
+      solar_electricity: 0,
+    },
+    {
+      country: "Kenya",
+      year: 2001,
+      solar_electricity: 0,
+    },
+    {
+      country: "Kenya",
+      year: 2002,
+      solar_electricity: 0,
+    },
+    {
+      country: "Kenya",
+      year: 2003,
+      solar_electricity: 0,
+    },
+    {
+      country: "Kenya",
+      year: 2004,
+      solar_electricity: 0,
+    },
+    {
+      country: "Kenya",
+      year: 2005,
+      solar_electricity: 0,
+    },
+    {
+      country: "Kenya",
+      year: 2006,
+      solar_electricity: 0,
+    },
+    {
+      country: "Kenya",
+      year: 2007,
+      solar_electricity: 0,
+    },
+    {
+      country: "Kenya",
+      year: 2008,
+      solar_electricity: 0,
+    },
+    {
+      country: "Kenya",
+      year: 2009,
+      solar_electricity: 0,
+    },
+    {
+      country: "Kenya",
+      year: 2010,
+      solar_electricity: 0,
+    },
+    {
+      country: "Kenya",
+      year: 2011,
+      solar_electricity: 0.01,
+    },
+    {
+      country: "Kenya",
+      year: 2012,
+      solar_electricity: 0.01,
+    },
+    {
+      country: "Kenya",
+      year: 2013,
+      solar_electricity: 0.03,
+    },
+    {
+      country: "Kenya",
+      year: 2014,
+      solar_electricity: 0.05,
+    },
+    {
+      country: "Kenya",
+      year: 2015,
+      solar_electricity: 0.05,
+    },
+    {
+      country: "Kenya",
+      year: 2016,
+      solar_electricity: 0.06,
+    },
+    {
+      country: "Kenya",
+      year: 2017,
+      solar_electricity: 0.07,
+    },
+    {
+      country: "Kenya",
+      year: 2018,
+      solar_electricity: 0.09,
+    },
+    {
+      country: "Kenya",
+      year: 2019,
+      solar_electricity: 0.09,
+    },
+    {
+      country: "Kenya",
+      year: 2020,
+      solar_electricity: 0.09,
+    },
+    {
+      country: "Kenya",
+      year: 2021,
+      solar_electricity: 0.17,
+    },
+    {
+      country: "Kenya",
+      year: 2022,
+      solar_electricity: 0.38,
+    },
+    {
+      country: "Kenya",
+      year: 2023,
+      solar_electricity: 0.49,
+    },
     // Morocco
-    { country: "Morocco", solar_electricity: 1.5, year: 2018 },
-    { country: "Morocco", solar_electricity: 1.9, year: 2019 },
-    { country: "Morocco", solar_electricity: 2.4, year: 2020 },
-    { country: "Morocco", solar_electricity: 3.0, year: 2021 },
-    { country: "Morocco", solar_electricity: 3.5, year: 2022 },
-    { country: "Morocco", solar_electricity: 4.2, year: 2023 },
+    {
+      country: "Morocco",
+      year: 2000,
+      solar_electricity: 0,
+    },
+    {
+      country: "Morocco",
+      year: 2001,
+      solar_electricity: 0,
+    },
+    {
+      country: "Morocco",
+      year: 2002,
+      solar_electricity: 0,
+    },
+    {
+      country: "Morocco",
+      year: 2003,
+      solar_electricity: 0,
+    },
+    {
+      country: "Morocco",
+      year: 2004,
+      solar_electricity: 0,
+    },
+    {
+      country: "Morocco",
+      year: 2005,
+      solar_electricity: 0,
+    },
+    {
+      country: "Morocco",
+      year: 2006,
+      solar_electricity: 0,
+    },
+    {
+      country: "Morocco",
+      year: 2007,
+      solar_electricity: 0,
+    },
+    {
+      country: "Morocco",
+      year: 2008,
+      solar_electricity: 0,
+    },
+    {
+      country: "Morocco",
+      year: 2009,
+      solar_electricity: 0,
+    },
+    {
+      country: "Morocco",
+      year: 2010,
+      solar_electricity: 0,
+    },
+    {
+      country: "Morocco",
+      year: 2011,
+      solar_electricity: 0,
+    },
+    {
+      country: "Morocco",
+      year: 2012,
+      solar_electricity: 0,
+    },
+    {
+      country: "Morocco",
+      year: 2013,
+      solar_electricity: 0,
+    },
+    {
+      country: "Morocco",
+      year: 2014,
+      solar_electricity: 0,
+    },
+    {
+      country: "Morocco",
+      year: 2015,
+      solar_electricity: 0,
+    },
+    {
+      country: "Morocco",
+      year: 2016,
+      solar_electricity: 0.4,
+    },
+    {
+      country: "Morocco",
+      year: 2017,
+      solar_electricity: 0.41,
+    },
+    {
+      country: "Morocco",
+      year: 2018,
+      solar_electricity: 0.95,
+    },
+    {
+      country: "Morocco",
+      year: 2019,
+      solar_electricity: 1.58,
+    },
+    {
+      country: "Morocco",
+      year: 2020,
+      solar_electricity: 1.52,
+    },
+    {
+      country: "Morocco",
+      year: 2021,
+      solar_electricity: 1.82,
+    },
+    {
+      country: "Morocco",
+      year: 2022,
+      solar_electricity: 1.45,
+    },
+    {
+      country: "Morocco",
+      year: 2023,
+      solar_electricity: 2.05,
+    },
 
     // South Africa
-    { country: "South Africa", solar_electricity: 2.1, year: 2018 },
-    { country: "South Africa", solar_electricity: 2.5, year: 2019 },
-    { country: "South Africa", solar_electricity: 2.8, year: 2020 },
-    { country: "South Africa", solar_electricity: 3.2, year: 2021 },
-    { country: "South Africa", solar_electricity: 3.9, year: 2022 },
-    { country: "South Africa", solar_electricity: 4.6, year: 2023 },
+    {
+      country: "South Africa",
+      year: 2000,
+      solar_electricity: 0.01,
+    },
+    {
+      country: "South Africa",
+      year: 2001,
+      solar_electricity: 0.01,
+    },
+    {
+      country: "South Africa",
+      year: 2002,
+      solar_electricity: 0.01,
+    },
+    {
+      country: "South Africa",
+      year: 2003,
+      solar_electricity: 0.01,
+    },
+    {
+      country: "South Africa",
+      year: 2004,
+      solar_electricity: 0.02,
+    },
+    {
+      country: "South Africa",
+      year: 2005,
+      solar_electricity: 0.02,
+    },
+    {
+      country: "South Africa",
+      year: 2006,
+      solar_electricity: 0.02,
+    },
+    {
+      country: "South Africa",
+      year: 2007,
+      solar_electricity: 0.02,
+    },
+    {
+      country: "South Africa",
+      year: 2008,
+      solar_electricity: 0.02,
+    },
+    {
+      country: "South Africa",
+      year: 2009,
+      solar_electricity: 0.02,
+    },
+    {
+      country: "South Africa",
+      year: 2010,
+      solar_electricity: 0.03,
+    },
+    {
+      country: "South Africa",
+      year: 2011,
+      solar_electricity: 0.08,
+    },
+    {
+      country: "South Africa",
+      year: 2012,
+      solar_electricity: 0.09,
+    },
+    {
+      country: "South Africa",
+      year: 2013,
+      solar_electricity: 0.24,
+    },
+    {
+      country: "South Africa",
+      year: 2014,
+      solar_electricity: 1.07,
+    },
+    {
+      country: "South Africa",
+      year: 2015,
+      solar_electricity: 2.75,
+    },
+    {
+      country: "South Africa",
+      year: 2016,
+      solar_electricity: 3.27,
+    },
+    {
+      country: "South Africa",
+      year: 2017,
+      solar_electricity: 4.24,
+    },
+    {
+      country: "South Africa",
+      year: 2018,
+      solar_electricity: 4.57,
+    },
+    {
+      country: "South Africa",
+      year: 2019,
+      solar_electricity: 4.9,
+    },
+    {
+      country: "South Africa",
+      year: 2020,
+      solar_electricity: 5.7,
+    },
+    {
+      country: "South Africa",
+      year: 2021,
+      solar_electricity: 6.78,
+    },
+    {
+      country: "South Africa",
+      year: 2022,
+      solar_electricity: 10.13,
+    },
+    {
+      country: "South Africa",
+      year: 2023,
+      solar_electricity: 15.57,
+    },
 
     // Egypt
-    { country: "Egypt", solar_electricity: 0.7, year: 2018 },
-    { country: "Egypt", solar_electricity: 1.0, year: 2019 },
-    { country: "Egypt", solar_electricity: 1.6, year: 2020 },
-    { country: "Egypt", solar_electricity: 2.4, year: 2021 },
-    { country: "Egypt", solar_electricity: 3.2, year: 2022 },
-    { country: "Egypt", solar_electricity: 3.8, year: 2023 },
+    {
+      country: "Egypt",
+      year: 2000,
+      solar_electricity: 0,
+    },
+    {
+      country: "Egypt",
+      year: 2001,
+      solar_electricity: 0,
+    },
+    {
+      country: "Egypt",
+      year: 2002,
+      solar_electricity: 0,
+    },
+    {
+      country: "Egypt",
+      year: 2003,
+      solar_electricity: 0,
+    },
+    {
+      country: "Egypt",
+      year: 2004,
+      solar_electricity: 0,
+    },
+    {
+      country: "Egypt",
+      year: 2005,
+      solar_electricity: 0,
+    },
+    {
+      country: "Egypt",
+      year: 2006,
+      solar_electricity: 0,
+    },
+    {
+      country: "Egypt",
+      year: 2007,
+      solar_electricity: 0,
+    },
+    {
+      country: "Egypt",
+      year: 2008,
+      solar_electricity: 0,
+    },
+    {
+      country: "Egypt",
+      year: 2009,
+      solar_electricity: 0,
+    },
+    {
+      country: "Egypt",
+      year: 2010,
+      solar_electricity: 0.03,
+    },
+    {
+      country: "Egypt",
+      year: 2011,
+      solar_electricity: 0.24,
+    },
+    {
+      country: "Egypt",
+      year: 2012,
+      solar_electricity: 0.5,
+    },
+    {
+      country: "Egypt",
+      year: 2013,
+      solar_electricity: 0.03,
+    },
+    {
+      country: "Egypt",
+      year: 2014,
+      solar_electricity: 0.14,
+    },
+    {
+      country: "Egypt",
+      year: 2015,
+      solar_electricity: 0.04,
+    },
+    {
+      country: "Egypt",
+      year: 2016,
+      solar_electricity: 0.23,
+    },
+    {
+      country: "Egypt",
+      year: 2017,
+      solar_electricity: 0.6,
+    },
+    {
+      country: "Egypt",
+      year: 2018,
+      solar_electricity: 0.55,
+    },
+    {
+      country: "Egypt",
+      year: 2019,
+      solar_electricity: 1.49,
+    },
+    {
+      country: "Egypt",
+      year: 2020,
+      solar_electricity: 4.45,
+    },
+    {
+      country: "Egypt",
+      year: 2021,
+      solar_electricity: 5.08,
+    },
+    {
+      country: "Egypt",
+      year: 2022,
+      solar_electricity: 5.03,
+    },
+    {
+      country: "Egypt",
+      year: 2023,
+      solar_electricity: 4.67,
+    },
   ];
 
   const width = chartDimensions.width || 800;
   const height = chartDimensions.height || 500;
-  const margin = { top: 50, right: 150, bottom: 60, left: 80 };
+  const margin = { top: 50, right: 0, bottom: 100, left: 80 };
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
 
@@ -67,10 +638,22 @@ const SolarElectricityChart = ({
     .domain(countries)
     .range(["#ff9e4a", "#1f77b4", "#2ca02c", "#d62728", "#9467bd"]);
 
-  const xScale = useMemo(
-    () => d3.scaleLinear().domain(d3.extent(years)).range([0, innerWidth]),
-    [data]
-  );
+  // Setup scales and generators
+  const xScale = useMemo(() => {
+    return d3
+      .scaleLinear()
+      .domain(d3.extent(data, (d) => d.year))
+      .range([0, innerWidth])
+      .nice();
+  }, [data, innerWidth]);
+
+  // Create X axis ticks - reduce number for better visibility
+  const xTicks = useMemo(() => {
+    const allYears = data.map((d) => d.year);
+    // For years 2000-2023, show only every 4th or 5th year on mobile, every 2nd or 3rd year otherwise
+    const step = screenSize === "small" ? 5 : 2;
+    return allYears.filter((_, index) => index % step === 0);
+  }, [data, screenSize]);
 
   const yScale = useMemo(
     () =>
@@ -109,7 +692,7 @@ const SolarElectricityChart = ({
       if (chartContainerRef.current) {
         const containerWidth = chartContainerRef.current.clientWidth;
         setChartDimensions({
-          width: containerWidth * 0.98, // 90% of container width
+          width: containerWidth, // 90% of container width
           height: Math.min(Math.max(containerWidth * 0.6, 300), 650), // Increased height range
         });
       }
@@ -136,11 +719,11 @@ const SolarElectricityChart = ({
         isFullscreen
           ? "w-full h-full fixed inset-0 z-50 max-w-none rounded-none"
           : ""
-      } bg-white rounded shadow border`}
+      } bg-white `}
     >
       <g transform={`translate(${margin.left}, ${margin.top})`}>
         {/* X Grid & Labels */}
-        {years.map((year) => (
+        {xTicks.map((year) => (
           <g key={`x-${year}`}>
             <line
               x1={xScale(year)}
@@ -192,7 +775,14 @@ const SolarElectricityChart = ({
             d={line(group.values)}
             fill="none"
             stroke={color(group.country)}
-            strokeWidth={2.5}
+            strokeWidth={
+              activeCountry === null || activeCountry === group.country ? 3 : 1
+            }
+            opacity={
+              activeCountry === null || activeCountry === group.country
+                ? 1
+                : 0.3
+            }
           />
         ))}
 
@@ -201,25 +791,42 @@ const SolarElectricityChart = ({
           group.values.map((d, i) => (
             <circle
               key={`${group.country}-${i}`}
+              opacity={
+                activeCountry === null || activeCountry === group.country
+                  ? 1
+                  : 0.3
+              }
               cx={xScale(d.year)}
               cy={yScale(d.solar_electricity)}
               r={4}
               fill={color(group.country)}
+              onMouseEnter={() =>
+                setTooltip({
+                  x: xScale(d.year),
+                  y: yScale(d.solar_electricity),
+                  country: d.country,
+                  year: d.year,
+                  solar_electricity: d.solar_electricity,
+                })
+              }
+              onMouseLeave={() => setTooltip(null)}
             />
           ))
         )}
 
         {/* Title */}
-        <text
-          x={innerWidth / 2}
-          y={-20}
-          textAnchor="middle"
-          fontSize={18}
-          fontWeight="bold"
-          fill="#333"
-        >
-          Solar Generation Growth in Selected African Nations
-        </text>
+        {isFullscreen && (
+          <text
+            x={innerWidth / 2}
+            y={-20}
+            textAnchor="middle"
+            fontSize={18}
+            fontWeight="bold"
+            fill="#333"
+          >
+            Solar Generation Growth in Selected African Nations
+          </text>
+        )}
 
         {/* Y Axis Label */}
         <text
@@ -235,9 +842,15 @@ const SolarElectricityChart = ({
       </g>
 
       {/* Legend */}
-      <g transform={`translate(${width - margin.right + 10}, ${margin.top})`}>
+      <g transform={`translate(${margin.left}, ${innerHeight + 100})`}>
         {countries.map((country, i) => (
-          <g key={country} transform={`translate(0, ${i * 25})`}>
+          <g
+            key={country}
+            transform={`translate(${(innerWidth / countries.length) * i}, 0)`}
+            onMouseEnter={() => setActiveCountry(country)}
+            onMouseLeave={() => setActiveCountry(null)}
+            style={{ cursor: "pointer" }}
+          >
             <rect width={15} height={15} fill={color(country)} />
             <text x={20} y={12} fontSize={13} fill="#333">
               {country}
@@ -245,6 +858,42 @@ const SolarElectricityChart = ({
           </g>
         ))}
       </g>
+
+      {/* tooltip */}
+      {tooltip && (
+        <foreignObject
+          x={
+            screenSize === "small"
+              ? "calc(50% - 128px)"
+              : tooltip.x + 700 > window.innerWidth
+              ? `${tooltip.x - 60}px`
+              : `${tooltip.x + margin.left + 10}px`
+          }
+          // x={tooltip.x + margin.left + 10}
+
+          y={tooltip.y + margin.top - 30}
+          width={120}
+          height={150}
+        >
+          <div
+            xmlns="http://www.w3.org/1999/xhtml"
+            style={{
+              background: "white",
+              border: "1px solid #ccc",
+              borderRadius: "4px",
+              padding: "5px 8px",
+              fontSize: 12,
+              pointerEvents: "none",
+            }}
+          >
+            <div>
+              <strong>{tooltip.country}</strong>
+            </div>
+            <div>Year: {tooltip.year}</div>
+            <div>Solar: {tooltip.solar_electricity} TWh</div>
+          </div>
+        </foreignObject>
+      )}
     </svg>
   );
 };
