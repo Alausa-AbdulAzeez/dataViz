@@ -30,6 +30,10 @@ export default function AfricaSolarSurge() {
   const [activeTab, setActiveTab] = useState("overview");
   // Overview tab
   const chartContainerRef = useRef(null);
+
+  // Country comparison trab
+  const barChartContainerRef = useRef(null);
+  const multiLineChartContainerRef = useRef(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Adoption tab ref
@@ -48,6 +52,9 @@ export default function AfricaSolarSurge() {
   const [adoptionData, setAdoptionData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadingMap, setLoadingMap] = useState(true);
+
+  // Country comparison
+  const [currentYear, setCurrentYear] = useState(2023);
 
   const fetchData = async () => {
     try {
@@ -145,28 +152,31 @@ export default function AfricaSolarSurge() {
   }, []);
 
   // Fullscreen toggle functionality (for overview tab)
-  const toggleFullscreen = useCallback(() => {
-    if (!chartContainerRef.current) return;
+  const toggleFullscreen = useCallback(
+    (attributedRef) => {
+      if (!attributedRef.current) return;
 
-    if (!isFullscreen) {
-      if (chartContainerRef.current.requestFullscreen) {
-        chartContainerRef.current.requestFullscreen();
-      } else if (chartContainerRef.current.webkitRequestFullscreen) {
-        chartContainerRef.current.webkitRequestFullscreen();
-      } else if (chartContainerRef.current.msRequestFullscreen) {
-        chartContainerRef.current.msRequestFullscreen();
+      if (!isFullscreen) {
+        if (attributedRef.current.requestFullscreen) {
+          attributedRef.current.requestFullscreen();
+        } else if (attributedRef.current.webkitRequestFullscreen) {
+          attributedRef.current.webkitRequestFullscreen();
+        } else if (attributedRef.current.msRequestFullscreen) {
+          attributedRef.current.msRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        }
       }
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      } else if (document.webkitExitFullscreen) {
-        document.webkitExitFullscreen();
-      } else if (document.msExitFullscreen) {
-        document.msExitFullscreen();
-      }
-    }
-    // No need to set isFullscreen here as it will be handled by the event listener
-  }, [isFullscreen]);
+      // No need to set isFullscreen here as it will be handled by the event listener
+    },
+    [isFullscreen]
+  );
   const toggleAdoptionFullscreen = useCallback(() => {
     if (!svgRef.current) return;
 
@@ -208,7 +218,7 @@ export default function AfricaSolarSurge() {
           </h1>
           <p className="text-xl">
             Exploring the growth and impact of solar energy across the African
-            continent (2000-2023)
+            continent (2000 - 2023)
           </p>
         </div>
       </header>
@@ -327,7 +337,7 @@ export default function AfricaSolarSurge() {
                   +154,400%
                 </p>
                 <p className="text-gray-600">
-                  Increase in solar's share of total electricity (2000-2023)
+                  Increase in solar's share of total electricity (2000 - 2023)
                 </p>
               </div>
 
@@ -346,7 +356,7 @@ export default function AfricaSolarSurge() {
             <div className="bg-white p-6 rounded-lg shadow-md mb-8">
               <div className="mb-2 flex h-fit items-center gap-3">
                 <h3 className="text-sm md:text-xl font-semibold flex-1">
-                  Solar Generation Growth in Africa (2000-2023)
+                  Solar Generation Growth in Africa (2000 - 2023)
                 </h3>
                 {/* RHS - Action buttons */}
                 <div className="w-fit h-8 flex justify-center gap-2 ">
@@ -592,7 +602,7 @@ export default function AfricaSolarSurge() {
             <div className="bg-white p-6 rounded-lg shadow-md mb-8">
               <div className="mb-2 flex h-fit items-center gap-3">
                 <h3 className="text-sm md:text-xl font-semibold flex-1">
-                  Africa's Growing Solar Share of Electricity (2000-2023)
+                  Africa's Growing Solar Share of Electricity (2000 - 2023)
                 </h3>
                 {/* RHS - Action buttons */}
                 <div className="w-fit h-8 flex justify-center gap-2 ">
@@ -812,22 +822,31 @@ export default function AfricaSolarSurge() {
         {/* Country tab */}
         {activeTab === "country" && (
           <section>
-            <h2 className="text-3xl font-bold mb-6">Country Comparison</h2>
+            <h2 className="text-3xl font-bold mb-6">
+              Leading Countries and Trends
+            </h2>
             <p className="text-gray-700 mb-6">
-              Solar adoption varies significantly across African countries,
-              influenced by factors such as policy frameworks, investment
-              climates, and natural resources.
+              Africa’s solar energy journey is a story of both bold strides and
+              quiet beginnings. Some countries are surging ahead with
+              large-scale solar power adoption, while others are only just
+              starting to harness the sun’s potential. This section compares
+              solar electricity generation across selected African
+              countries—highlighting the top producers over the past two decades
+              and how their outputs have evolved over time.
             </p>
             <div className="bg-white p-6 rounded-lg shadow-md mb-8">
               <div className="mb-2 flex h-fit items-center gap-3">
                 <h3 className="text-sm md:text-xl font-semibold flex-1">
-                  Africa's Growing Solar Share of Electricity (2000-2023)
+                  Top 10 African Countries by Solar Electricity Generation in{" "}
+                  <span className="text-orange-600 font-bold">
+                    {currentYear}
+                  </span>
                 </h3>
                 {/* RHS - Action buttons */}
                 <div className="w-fit h-8 flex justify-center gap-2 ">
                   {/* Fullscreen toggle button */}
                   <div
-                    onClick={toggleFullscreen}
+                    onClick={() => toggleFullscreen(barChartContainerRef)}
                     onMouseEnter={() => {
                       setIconTooltip({
                         visible: true,
@@ -908,12 +927,13 @@ export default function AfricaSolarSurge() {
                     height={500}
                     years={{ min: 2000, max: 2023 }}
                     defaultYear={2023}
+                    currentYear={currentYear}
+                    setCurrentYear={setCurrentYear}
                     colorByRegion={true}
                     isFullscreen={isFullscreen}
                     enableCompareMode={true}
                     enableSharing={true}
-                    toggleFullscreen={toggleFullscreen}
-                    chartContainerRef={chartContainerRef}
+                    chartContainerRef={barChartContainerRef}
                     isModalOpen={isModalOpen}
                     setIsModalOpen={setIsModalOpen}
                   />
@@ -921,26 +941,37 @@ export default function AfricaSolarSurge() {
               </div>
 
               <p className="text-xs md:text-base mt-4 text-gray-700">
-                In <b>2000</b>, solar power contributed virtually <b>nothing</b>{" "}
-                to Africa’s electricity generation. By <b>2023</b>, it had grown
-                to <b>3.09%</b> — a modest but meaningful rise. This growth is
-                less about environmental idealism and more about necessityThis
-                growth also reflects the growing recognition of solar as a
-                reliable and increasingly accessible power solution for many
-                African communities
+                In 2023, <span className="font-semibold">South Africa</span> led
+                the continent with
+                <span className="font-semibold"> 15.57 TWh</span> of solar
+                electricity—more than
+                <span className="font-semibold"> three times</span> the output
+                of
+                <span className="font-semibold"> Egypt</span> in second place (
+                <span className="font-semibold">4.67 TWh</span>).
+                <span className="font-semibold"> Morocco</span> followed with
+                <span className="font-semibold"> 2.05 TWh</span>, while
+                <span className="font-semibold"> Kenya</span> reached
+                <span className="font-semibold"> 0.49 TWh</span>—a notable
+                climb.
+                <span className="font-semibold"> Nigeria</span>, still in the
+                early stages, produced just
+                <span className="font-semibold"> 0.05 TWh</span>. The wide gap
+                between countries reflects differences in investment, policy
+                support, and infrastructure readiness.
               </p>
             </div>
 
             <div className="bg-white p-6 rounded-lg shadow-md mb-8">
               <div className="mb-2 flex h-fit items-center gap-3">
                 <h3 className="text-sm md:text-xl font-semibold flex-1">
-                  Growth Rate Comparison{" "}
+                  Solar Electricity Generation Trends (2000 – 2023)
                 </h3>
                 {/* RHS - Action buttons */}
                 <div className="w-fit h-8 flex justify-center gap-2 ">
                   {/* Fullscreen toggle button */}
                   <div
-                    onClick={toggleFullscreen}
+                    onClick={() => toggleFullscreen(multiLineChartContainerRef)}
                     onMouseEnter={() => {
                       setIconTooltip({
                         visible: true,
@@ -1022,7 +1053,7 @@ export default function AfricaSolarSurge() {
                     toggleFullscreen={toggleFullscreen}
                     iconTooltip={iconTooltip}
                     setIconTooltip={setIconTooltip}
-                    chartContainerRef={chartContainerRef}
+                    chartContainerRef={multiLineChartContainerRef}
                     isModalOpen={isModalOpen}
                     setIsModalOpen={setIsModalOpen}
                   />
@@ -1030,8 +1061,23 @@ export default function AfricaSolarSurge() {
               </div>
 
               <p className="text-xs md:text-base mt-4 text-gray-700">
-                This chart shows how solar adoption has grown at different rates
-                across selected African nations.
+                <span className="font-semibold">South Africa</span>,
+                <span className="font-semibold"> Egypt</span>, and
+                <span className="font-semibold"> Morocco</span> have
+                consistently led the continent in solar output.
+                <span className="font-semibold">
+                  {" "}
+                  South Africa’s rapid growth after 2015
+                </span>{" "}
+                is especially striking.
+                <span className="font-semibold"> Egypt</span> has shown steady
+                progress, while
+                <span className="font-semibold"> Kenya</span> began accelerating
+                around 2020.
+                <span className="font-semibold"> Nigeria</span> entered the
+                chart in 2023 with a small but visible rise. These trends offer
+                a snapshot of both mature and emerging players in Africa’s solar
+                energy space.
               </p>
             </div>
           </section>
@@ -1049,13 +1095,14 @@ export default function AfricaSolarSurge() {
             <div className="bg-white p-6 rounded-lg shadow-md mb-8">
               <div className="mb-2 flex h-fit items-center gap-3">
                 <h3 className="text-sm md:text-xl font-semibold flex-1">
-                  Africa's Growing Solar Share of Electricity (2000-2023)
+                  Top 10 African Countries by Solar Electricity Generation in{" "}
+                  <span className="text-blue-600 font-bold">{currentYear}</span>
                 </h3>
                 {/* RHS - Action buttons */}
                 <div className="w-fit h-8 flex justify-center gap-2 ">
                   {/* Fullscreen toggle button */}
                   <div
-                    onClick={toggleFullscreen}
+                    onClick={() => toggleFullscreen()}
                     onMouseEnter={() => {
                       setIconTooltip({
                         visible: true,

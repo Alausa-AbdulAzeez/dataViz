@@ -11,6 +11,7 @@ const SolarElectricityChart = ({
     width: 0,
     height: 0,
   });
+  const [visibleCountries, setVisibleCountries] = useState({});
   const [tooltip, setTooltip] = useState(null);
   const [activeCountry, setActiveCountry] = useState(null);
 
@@ -627,7 +628,12 @@ const SolarElectricityChart = ({
 
   const width = chartDimensions.width || 800;
   const height = chartDimensions.height || 500;
-  const margin = { top: 50, right: 0, bottom: 100, left: 80 };
+  const margin = {
+    top: 50,
+    right: screenSize === "small" ? 20 : 10,
+    bottom: screenSize === "small" ? 120 : 100,
+    left: screenSize === "small" ? 60 : 80,
+  };
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
 
@@ -649,7 +655,7 @@ const SolarElectricityChart = ({
 
   // Create X axis ticks - reduce number for better visibility
   const xTicks = useMemo(() => {
-    const allYears = data.map((d) => d.year);
+    const allYears = [...new Set(data.map((d) => d.year))];
     // For years 2000-2023, show only every 4th or 5th year on mobile, every 2nd or 3rd year otherwise
     const step = screenSize === "small" ? 5 : 2;
     return allYears.filter((_, index) => index % step === 0);
@@ -710,6 +716,47 @@ const SolarElectricityChart = ({
     };
   }, [chartContainerRef, isFullscreen]);
 
+  // Initialize visible countries
+  useEffect(() => {
+    const initialVisibility = {};
+    countries.forEach((country) => {
+      initialVisibility[country] = true;
+    });
+    setVisibleCountries(initialVisibility);
+  }, []);
+
+  const getLegendLayout = () => {
+    if (screenSize === "small") {
+      // Stack vertically on mobile, 2 columns
+      const itemsPerRow = 2;
+      const itemWidth = innerWidth / itemsPerRow;
+      return countries.map((country, i) => ({
+        country,
+        x: (i % itemsPerRow) * itemWidth,
+        y: Math.floor(i / itemsPerRow) * 30,
+      }));
+    } else if (screenSize === "medium") {
+      // 3 columns on medium screens
+      const itemsPerRow = 3;
+      const itemWidth = innerWidth / itemsPerRow;
+      return countries.map((country, i) => ({
+        country,
+        x: (i % itemsPerRow) * itemWidth,
+        y: Math.floor(i / itemsPerRow) * 30,
+      }));
+    } else {
+      // Single row on large screens
+      const itemWidth = innerWidth / countries.length;
+      return countries.map((country, i) => ({
+        country,
+        x: i * itemWidth,
+        y: 0,
+      }));
+    }
+  };
+
+  const legendLayout = getLegendLayout();
+
   return (
     <svg
       ref={chartContainerRef}
@@ -723,8 +770,8 @@ const SolarElectricityChart = ({
     >
       <g transform={`translate(${margin.left}, ${margin.top})`}>
         {/* X Grid & Labels */}
-        {xTicks.map((year) => (
-          <g key={`x-${year}`}>
+        {xTicks.map((year, index) => (
+          <g key={`x-${year}-${index}`}>
             <line
               x1={xScale(year)}
               x2={xScale(year)}
@@ -738,7 +785,7 @@ const SolarElectricityChart = ({
               y={innerHeight + 20}
               textAnchor="middle"
               fontSize={12}
-              fill="#333"
+              fill="#555"
             >
               {year}
             </text>
@@ -776,7 +823,11 @@ const SolarElectricityChart = ({
             fill="none"
             stroke={color(group.country)}
             strokeWidth={
-              activeCountry === null || activeCountry === group.country ? 3 : 1
+              activeCountry === null || activeCountry === group.country
+                ? screenSize === "small"
+                  ? 1.5
+                  : 3
+                : 1
             }
             opacity={
               activeCountry === null || activeCountry === group.country
@@ -798,7 +849,7 @@ const SolarElectricityChart = ({
               }
               cx={xScale(d.year)}
               cy={yScale(d.solar_electricity)}
-              r={4}
+              r={screenSize === "small" ? 1.5 : 4}
               fill={color(group.country)}
               onMouseEnter={() =>
                 setTooltip({
@@ -841,19 +892,41 @@ const SolarElectricityChart = ({
         </text>
       </g>
 
-      {/* Legend */}
-      <g transform={`translate(${margin.left}, ${innerHeight + 100})`}>
-        {countries.map((country, i) => (
+      {/* Responsive Legend at Bottom */}
+      <g
+        transform={`translate(${margin.left}, ${
+          innerHeight + margin.top + 40
+        })`}
+      >
+        {legendLayout.map(({ country, x, y }) => (
           <g
             key={country}
-            transform={`translate(${(innerWidth / countries.length) * i}, 0)`}
+            transform={`translate(${x}, ${y})`}
             onMouseEnter={() => setActiveCountry(country)}
             onMouseLeave={() => setActiveCountry(null)}
+            onClick={() => toggleCountryVisibility(country)}
             style={{ cursor: "pointer" }}
           >
-            <rect width={15} height={15} fill={color(country)} />
-            <text x={20} y={12} fontSize={13} fill="#333">
-              {country}
+            <rect
+              width={15}
+              height={15}
+              fill={color(country)}
+              opacity={1}
+              stroke={activeCountry === country ? "#999" : "none"}
+              strokeWidth={2}
+              style={{ transition: "opacity 0.3s, stroke 0.3s" }}
+            />
+            <text
+              x={20}
+              y={12}
+              fontSize={screenSize === "small" ? 11 : 13}
+              fill="#333"
+              opacity={visibleCountries[country] ? 1 : 0.5}
+              style={{ transition: "opacity 0.3s" }}
+            >
+              {screenSize === "small" && country === "South Africa"
+                ? "S. Africa"
+                : country}
             </text>
           </g>
         ))}

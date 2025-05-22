@@ -19,9 +19,10 @@ const SolarSurgeCountryComparison = ({
   isModalOpen,
   chartContainerRef,
   isFullscreen,
+  currentYear,
+  setCurrentYear,
 }) => {
   // State management
-  const [currentYear, setCurrentYear] = useState(defaultYear);
   const [compareYear, setCompareYear] = useState(null);
   const [hoveredCountry, setHoveredCountry] = useState(null);
   const [showOnlySelected, setShowOnlySelected] = useState(false);
@@ -344,63 +345,13 @@ const SolarSurgeCountryComparison = ({
       : {};
   };
 
-  // Fullscreen toggle functionality
-  const toggleFullscreen = useCallback(() => {
-    if (!chartContainerRef.current) return;
-
-    if (!isFullscreen) {
-      if (chartContainerRef.current.requestFullscreen) {
-        chartContainerRef.current.requestFullscreen();
-      } else if (chartContainerRef.current.webkitRequestFullscreen) {
-        chartContainerRef.current.webkitRequestFullscreen();
-      } else if (chartContainerRef.current.msRequestFullscreen) {
-        chartContainerRef.current.msRequestFullscreen();
-      }
-      setIsFullscreen(true);
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      } else if (document.webkitExitFullscreen) {
-        document.webkitExitFullscreen();
-      } else if (document.msExitFullscreen) {
-        document.msExitFullscreen();
-      }
-      setIsFullscreen(false);
-    }
-  }, [isFullscreen]);
-
-  // Add event listener for fullscreen change
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(
-        document.fullscreenElement ||
-          document.webkitFullscreenElement ||
-          document.msFullscreenElement
-      );
-    };
-
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
-    document.addEventListener("msfullscreenchange", handleFullscreenChange);
-
-    return () => {
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-      document.removeEventListener(
-        "webkitfullscreenchange",
-        handleFullscreenChange
-      );
-      document.removeEventListener(
-        "msfullscreenchange",
-        handleFullscreenChange
-      );
-    };
-  }, []);
-
   // Update chart dimensions on window resize
   useEffect(() => {
     const updateDimensions = () => {
       if (chartContainerRef.current) {
+        console.log(width);
         const containerWidth = chartContainerRef.current.clientWidth;
+        console.log(containerWidth);
         setChartDimensions({
           width:
             screenSize === "small"
@@ -419,7 +370,7 @@ const SolarSurgeCountryComparison = ({
 
     // Cleanup
     return () => window.removeEventListener("resize", updateDimensions);
-  }, [chartContainerRef, isFullscreen]);
+  }, [screenSize, isFullscreen]);
 
   return (
     <div className="relative w-full min-h-fit h-auto">
@@ -428,7 +379,6 @@ const SolarSurgeCountryComparison = ({
         <div className="px-3 my-10 mx-auto w-[1000px] rounded-md relative">
           <div className="mx-auto w-[90%] h-full py-5">
             <div className="mb-3 flex justify-between">
-              {console.log(compareYear)}
               <div
                 className={`${
                   compareYear ? "opacity-100" : "opacity-0"
@@ -493,7 +443,7 @@ const SolarSurgeCountryComparison = ({
                     fontSize={12}
                     fontWeight={400}
                   >
-                    {datum["solar_electricity"]} KWh
+                    {datum["solar_electricity"]} TWh
                   </text>
                 ))}
               </g>
@@ -698,7 +648,7 @@ const SolarSurgeCountryComparison = ({
             <div className="mt-3 space-y-2">
               <div>
                 Solar Power Generation ({dataCardInfo.year}):{" "}
-                {dataCardInfo.currentValue} KWh
+                {dataCardInfo.currentValue} TWh
               </div>
               {dataCardInfo.growthRate !== null && (
                 <div>
@@ -910,7 +860,7 @@ const SolarSurgeCountryComparison = ({
 
           {/* The chart */}
           {filteredData?.length > 0 ? (
-            <svg width={width} height={height}>
+            <svg width={width} height={isFullscreen ? height - 120 : height}>
               <g transform={`translate(${margins.left - 25}, ${margins.top})`}>
                 {/* country labels */}
                 {filteredData?.map((datum) => (
@@ -954,7 +904,7 @@ const SolarSurgeCountryComparison = ({
                         visible: true,
                         x: e.clientX + 12, // offset a bit to the right of cursor
                         y: e.clientY + 12, // offset slightly below the cursor
-                        content: `${datum.country}: ${datum["solar_electricity"]} KWh`,
+                        content: `${datum.country}: ${datum["solar_electricity"]} TWh`,
                       });
                     }}
                     onMouseLeave={() => {
@@ -1002,7 +952,7 @@ const SolarSurgeCountryComparison = ({
                     }`}
                     fontWeight={400}
                   >
-                    {datum["solar_electricity"]} KWh
+                    {datum["solar_electricity"]} TWh
                   </text>
                 ))}
 
@@ -1023,7 +973,7 @@ const SolarSurgeCountryComparison = ({
                       }`}
                       fontWeight={400}
                     >
-                      {datum["solar_electricity"]} KWh
+                      {datum["solar_electricity"]} TWh
                     </text>
                   ))}
               </g>
