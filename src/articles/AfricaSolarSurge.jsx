@@ -17,6 +17,7 @@ import {
 } from "../charts";
 import { csv } from "d3";
 import { Icon } from "@iconify/react";
+import html2canvas from "html2canvas";
 
 export default function AfricaSolarSurge() {
   const THEME = {
@@ -30,11 +31,12 @@ export default function AfricaSolarSurge() {
   const [activeTab, setActiveTab] = useState("overview");
   // Overview tab
   const chartContainerRef = useRef(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Country comparison trab
   const barChartContainerRef = useRef(null);
   const multiLineChartContainerRef = useRef(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isBarModalOpen, setIsBarModalOpen] = useState(false);
 
   // Adoption tab ref
   const svgRef = useRef(null);
@@ -207,6 +209,51 @@ export default function AfricaSolarSurge() {
   useEffect(() => {
     console.log(adoptionData);
   }, [adoptionData]);
+
+  // Helper functions for download handlers
+  const onDownload = (type, ref) => {
+    if (type === "PNG") {
+      html2canvas(ref.current).then((canvas) => {
+        canvas.toBlob((blob) => {
+          saveAs(blob, `chart-${new Date().getTime()}.png`);
+        });
+      });
+    } else if (type === "SVG") {
+      const svgElement = ref.current.querySelector("svg");
+      const svgData = new XMLSerializer().serializeToString(svgElement);
+      const svgBlob = new Blob([svgData], {
+        type: "image/svg+xml;charset=utf-8",
+      });
+      saveAs(svgBlob, `population-chart-${new Date().getTime()}.svg`);
+    } else if (type === "CSV") {
+      const { currentYear, data } = ref;
+      let csvContent = "Country,Date,solar_electricity\n";
+
+      data.forEach((item) => {
+        csvContent += `${item.country},${item.year},${item.solar_electricity}\n`;
+      });
+
+      const csvBlob = new Blob([csvContent], {
+        type: "text/csv;charset=utf-8",
+      });
+      saveAs(csvBlob, `data-${currentYear}-${new Date().getTime()}.csv`);
+    } else if (type === "FullCSV") {
+      const { data } = ref;
+      const years = Object.keys(data[0]).filter((key) => !isNaN(parseInt(key)));
+
+      let csvContent = "country,year,solar_electricity" + "\n";
+
+      data.forEach((item) => {
+        csvContent += `${item.country},${item.year},${item.solar_electricity}`;
+        csvContent += "\n";
+      });
+
+      const csvBlob = new Blob([csvContent], {
+        type: "text/csv;charset=utf-8",
+      });
+      saveAs(csvBlob, `population-data-full-${new Date().getTime()}.csv`);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -882,7 +929,7 @@ export default function AfricaSolarSurge() {
 
                   {/* Download button */}
                   <div
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => setIsBarModalOpen(true)}
                     onMouseEnter={() => {
                       setIconTooltip({
                         visible: true,
@@ -922,7 +969,7 @@ export default function AfricaSolarSurge() {
                   <SolarSurgeCountryComparison
                     data={adoptionData}
                     adoptionData={adoptionData}
-                    title="Solar Generation"
+                    title="Top 10 African Countries by Solar Electricity Generation"
                     width={900}
                     height={500}
                     years={{ min: 2000, max: 2023 }}
@@ -934,12 +981,32 @@ export default function AfricaSolarSurge() {
                     enableCompareMode={true}
                     enableSharing={true}
                     chartContainerRef={barChartContainerRef}
-                    isModalOpen={isModalOpen}
-                    setIsModalOpen={setIsModalOpen}
+                    isModalOpen={isBarModalOpen}
+                    setIsModalOpen={setIsBarModalOpen}
+                    onDownload={onDownload}
                   />
                 )}
               </div>
-
+              <div className="mt-4 pt-2 border-t border-gray-200">
+                <div className="text-xs text-gray-600">
+                  <div className="font-semibold">
+                    Data source:{" "}
+                    <span className="font-normal">
+                      Our World in Data - Energy Dataset
+                    </span>
+                  </div>
+                  <div className="mt-1 flex items-center gap-1">
+                    <a
+                      href="https://github.com/owid/energy-data"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 underline"
+                    >
+                      Learn more about this data
+                    </a>
+                  </div>
+                </div>
+              </div>
               <p className="text-xs md:text-base mt-4 text-gray-700">
                 In 2023, <span className="font-semibold">South Africa</span> led
                 the continent with

@@ -159,6 +159,7 @@ const SolarShareInGeneration = ({
   // Handle downloads
   const handleDownload = () => {
     if (onDownload && typeof onDownload === "function") {
+      console.log("should download");
       onDownload("PNG", chartRef);
     }
   };

@@ -7,7 +7,7 @@ import { Range } from "../../components";
 const SolarSurgeCountryComparison = ({
   data,
   adoptionData,
-  title = "Solar Generation",
+  title = "Top 10 African Countries by Solar Electricity Generation",
   years = { min: 1950, max: 2020 },
   defaultYear = 2023,
   colorByRegion = false,
@@ -18,6 +18,7 @@ const SolarSurgeCountryComparison = ({
   onDownload = () => {},
   isModalOpen,
   chartContainerRef,
+  setIsModalOpen,
   isFullscreen,
   currentYear,
   setCurrentYear,
@@ -167,7 +168,7 @@ const SolarSurgeCountryComparison = ({
   const yScale = d3
     .scaleBand()
     .domain(filteredData.map((d) => d.country))
-    .range([0, innerHeight])
+    .range(isFullscreen ? [0, innerHeight - 120] : [0, innerHeight])
     .padding(0.1);
 
   // Determine max value for x scale
@@ -349,9 +350,7 @@ const SolarSurgeCountryComparison = ({
   useEffect(() => {
     const updateDimensions = () => {
       if (chartContainerRef.current) {
-        console.log(width);
         const containerWidth = chartContainerRef.current.clientWidth;
-        console.log(containerWidth);
         setChartDimensions({
           width:
             screenSize === "small"
@@ -375,7 +374,7 @@ const SolarSurgeCountryComparison = ({
   return (
     <div className="relative w-full min-h-fit h-auto">
       {/* Hidden chart for export */}
-      <div ref={chartRef} className="fixed -top-[200%]">
+      {/* <div ref={chartRef} className="fixed -top-[200%]">
         <div className="px-3 my-10 mx-auto w-[1000px] rounded-md relative">
           <div className="mx-auto w-[90%] h-full py-5">
             <div className="mb-3 flex justify-between">
@@ -391,7 +390,6 @@ const SolarSurgeCountryComparison = ({
 
             <svg width={width} height={height}>
               <g transform={`translate(${margins.left}, ${margins.top})`}>
-                {/* Country labels */}
                 {filteredData?.map((datum) => (
                   <text
                     key={`country-${datum.country}`}
@@ -407,7 +405,6 @@ const SolarSurgeCountryComparison = ({
                   </text>
                 ))}
 
-                {/* Bars for current year */}
                 {filteredData?.map((datum) => (
                   <rect
                     key={`bar-${datum.country}`}
@@ -419,7 +416,6 @@ const SolarSurgeCountryComparison = ({
                   />
                 ))}
 
-                {/* Bars for compare year if enabled */}
                 {compareYear &&
                   filteredData?.map((datum) => (
                     <rect
@@ -432,7 +428,6 @@ const SolarSurgeCountryComparison = ({
                     />
                   ))}
 
-                {/* Values */}
                 {filteredData?.map((datum) => (
                   <text
                     key={`pop-${datum.country}`}
@@ -449,6 +444,147 @@ const SolarSurgeCountryComparison = ({
               </g>
             </svg>
           </div>
+        </div>
+      </div> */}
+      {/* Main chart container */}
+      <div ref={chartRef} className="fixed -top-[200%]">
+        <div className="mx-auto w-full md:w-[90%] h-full py-5">
+          {/* Chart header */}
+          <div className="mb-3 flex flex-wrap justify-between items-center gap-2">
+            <div className={`text-lg font-semibold`}>
+              {title}, {currentYear}
+              {compareYear && ` vs ${compareYear}`}
+            </div>
+          </div>
+
+          {/* The chart */}
+          {filteredData?.length > 0 ? (
+            <svg width={width} height={isFullscreen ? height - 120 : height}>
+              <g transform={`translate(${margins.left - 25}, ${margins.top})`}>
+                {/* country labels */}
+                {filteredData?.map((datum) => (
+                  <text
+                    key={`country-${datum.country}`}
+                    className={`${
+                      hoveredCountry === datum?.country
+                        ? "opacity-100"
+                        : "opacity-60"
+                    }`}
+                    fill={"#000"}
+                    x={-5}
+                    y={yScale(datum?.country) + yScale.bandwidth() / 2}
+                    dy={".36em"}
+                    fontSize={12}
+                    fontWeight={400}
+                    style={{ textAnchor: "end" }}
+                  >
+                    {datum?.country === "Democratic Republic of Congo"
+                      ? "DR Congo"
+                      : datum?.country}
+                  </text>
+                ))}
+                {/* Bars for current year */}
+                {filteredData?.map((datum) => (
+                  <rect
+                    key={`bar-${datum.country}`}
+                    x={0}
+                    width={xScale(datum["solar_electricity"] || 0)}
+                    height={yScale.bandwidth()}
+                    fill={getCountryColor(datum.country)}
+                    y={yScale(datum?.country)}
+                    className={`${
+                      hoveredCountry === datum?.country
+                        ? "opacity-100"
+                        : "opacity-60"
+                    }`}
+                    onMouseEnter={() => setHoveredCountry(datum.country)}
+                    onMouseMove={(e) => {
+                      setTooltip({
+                        visible: true,
+                        x: e.clientX + 12, // offset a bit to the right of cursor
+                        y: e.clientY + 12, // offset slightly below the cursor
+                        content: `${datum.country}: ${datum["solar_electricity"]} TWh`,
+                      });
+                    }}
+                    onMouseLeave={() => {
+                      setHoveredCountry(null);
+                      setTooltip({ visible: false, x: 0, y: 0, content: "" });
+                    }}
+                    onClick={(e) => {
+                      setDataCardPos({ x: e.clientX, y: e.clientY });
+                      showDataCard(datum.country);
+                    }}
+                  />
+                ))}
+
+                {/* Bars for compare year if enabled */}
+                {compareYear &&
+                  compareYearData?.map((datum) => (
+                    <rect
+                      key={`bar-${datum.country}`}
+                      x={0}
+                      width={xScale(datum["solar_electricity"] || 0)}
+                      height={yScale.bandwidth() / 2}
+                      y={yScale(datum?.country) + yScale.bandwidth() / 2}
+                      fill={"rgba(0,0,0,0.3)"}
+                    />
+                  ))}
+
+                {/* Power Geeration values for current year */}
+                {filteredData?.map((datum) => (
+                  <text
+                    key={`pop-${datum.country}`}
+                    fill={"#000"}
+                    x={xScale(datum["solar_electricity"] || 0) + 5}
+                    y={
+                      yScale(datum?.country) +
+                      (compareYear
+                        ? yScale.bandwidth() / 4
+                        : yScale.bandwidth() / 2)
+                    }
+                    dy={".36em"}
+                    fontSize={12}
+                    className={`${
+                      hoveredCountry === datum?.country
+                        ? "opacity-100"
+                        : "opacity-60"
+                    }`}
+                    fontWeight={400}
+                  >
+                    {datum["solar_electricity"]} TWh
+                  </text>
+                ))}
+
+                {/* Population values for compare year */}
+                {compareYear &&
+                  compareYearData?.map((datum) => (
+                    <text
+                      key={`pop-compare-${datum.country}`}
+                      fill={"#000"}
+                      x={xScale(datum["solar_electricity"] || 0) + 5}
+                      y={yScale(datum?.country) + (3 * yScale.bandwidth()) / 4}
+                      dy={".36em"}
+                      fontSize={12}
+                      className={`${
+                        hoveredCountry === datum?.country
+                          ? "opacity-100"
+                          : "opacity-60"
+                      }`}
+                      fontWeight={400}
+                    >
+                      {datum["solar_electricity"]} TWh
+                    </text>
+                  ))}
+              </g>
+            </svg>
+          ) : (
+            <div className="w-full flex justify-center items-center py-20 text-textColor-80">
+              <div>
+                No data found for Country: "{searchTerm}" and Year: "
+                {currentYear}"
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -508,20 +644,27 @@ const SolarSurgeCountryComparison = ({
                     onClick={handleDownload}
                     className="w-full h-[100px] rounded-sm hover:bg-slate-200 items-center justify-center flex flex-col bg-slate-100"
                   >
-                    <div className="font-medium text-lg">Image (PNG)</div>
-                    <div className="text-sm">Suitable for most use cases</div>
+                    <div className="font-medium text-sm md:text-lg">
+                      Image (PNG)
+                    </div>
+                    <div className="text-xs md:text-sm">
+                      Suitable for most use cases
+                    </div>
                   </div>
-                  <div
+                  {/* <div
                     onClick={handleSVGDownload}
-                    className="w-full rounded-sm hover:bg-slate-200 items-center h-[100px] justify-center flex flex-col bg-slate-100 cursor-pointer"
+                    className="w-full cursor-not-allowed opacity-50 rounded-sm hover:bg-slate-200 items-center h-[100px] justify-center flex flex-col bg-slate-100 cursor-pointer"
                   >
                     <div className="font-medium text-lg">
-                      Vector Image (SVG)
+                      Vector Image (SVG){" "}
+                      <span className="ml-2 text-red-950 font-bold">
+                        Not Available
+                      </span>
                     </div>
                     <div className="text-sm">
                       Scalable format, ideal for editing
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               )}
 
@@ -531,10 +674,10 @@ const SolarSurgeCountryComparison = ({
                     onClick={handleCSVDownload}
                     className="w-full h-[100px] rounded-sm hover:bg-slate-200 items-center justify-center flex flex-col bg-slate-100 cursor-pointer"
                   >
-                    <div className="font-medium text-lg">
+                    <div className="font-medium text-sm md:text-lg">
                       Current Year Data (CSV)
                     </div>
-                    <div className="text-sm">
+                    <div className="text-xs md:text-sm">
                       Download data for {currentYear} only
                     </div>
                   </div>
@@ -542,10 +685,10 @@ const SolarSurgeCountryComparison = ({
                     onClick={handleFullCSVDownload}
                     className="w-full h-[100px] rounded-sm hover:bg-slate-200 items-center justify-center flex flex-col bg-slate-100 cursor-pointer"
                   >
-                    <div className="font-medium text-lg">
+                    <div className="font-medium md:text-lg text-sm">
                       Complete Dataset (CSV)
                     </div>
-                    <div className="text-sm text-center">
+                    <div className="text-xs md:text-sm text-center">
                       Download all years
                     </div>
                   </div>
@@ -803,7 +946,7 @@ const SolarSurgeCountryComparison = ({
           <div className="mb-3 flex flex-wrap justify-between items-center gap-2">
             <div
               className={`${
-                compareYear ? "opacity-100" : "opacity-0"
+                compareYear || isFullscreen ? "opacity-100" : "opacity-0"
               } text-lg font-semibold`}
             >
               {title}, {currentYear}
