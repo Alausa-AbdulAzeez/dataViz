@@ -37,6 +37,7 @@ export default function AfricaSolarSurge() {
   const barChartContainerRef = useRef(null);
   const multiLineChartContainerRef = useRef(null);
   const [isBarModalOpen, setIsBarModalOpen] = useState(false);
+  const [isMultiLineModalOpen, setIsMultiLineModalOpen] = useState(false);
 
   // Adoption tab ref
   const svgRef = useRef(null);
@@ -251,7 +252,7 @@ export default function AfricaSolarSurge() {
       const csvBlob = new Blob([csvContent], {
         type: "text/csv;charset=utf-8",
       });
-      saveAs(csvBlob, `population-data-full-${new Date().getTime()}.csv`);
+      saveAs(csvBlob, `data-full-${new Date().getTime()}.csv`);
     }
   };
 
@@ -261,11 +262,11 @@ export default function AfricaSolarSurge() {
       <header className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white py-12 px-4">
         <div className="max-w-5xl mx-auto">
           <h1 className="text-4xl font-bold mb-2">
-            Africa's Solar Surge: Hope for a Green Future
+            Africa's Solar Surge: Powering a Brighter Future
           </h1>
           <p className="text-xl">
-            Exploring the growth and impact of solar energy across the African
-            continent (2000 - 2023)
+            A data-driven look at the rise of solar energy across Africa (2000 –
+            2023)
           </p>
         </div>
       </header>
@@ -987,6 +988,8 @@ export default function AfricaSolarSurge() {
                   />
                 )}
               </div>
+
+              {/* Data source attribution */}
               <div className="mt-4 pt-2 border-t border-gray-200">
                 <div className="text-xs text-gray-600">
                   <div className="font-semibold">
@@ -1007,6 +1010,8 @@ export default function AfricaSolarSurge() {
                   </div>
                 </div>
               </div>
+
+              {/* Conclusion/Outro */}
               <p className="text-xs md:text-base mt-4 text-gray-700">
                 In 2023, <span className="font-semibold">South Africa</span> led
                 the continent with
@@ -1074,7 +1079,7 @@ export default function AfricaSolarSurge() {
 
                   {/* Download button */}
                   <div
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => setIsMultiLineModalOpen(true)}
                     onMouseEnter={() => {
                       setIconTooltip({
                         visible: true,
@@ -1110,7 +1115,7 @@ export default function AfricaSolarSurge() {
                     <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-yellow-500"></div>
                   </div>
                 ) : (
-                  // Line chart
+                  // Multi Line chart
                   <SolarGrowthRateComparison
                     data={data}
                     THEME={THEME}
@@ -1121,10 +1126,33 @@ export default function AfricaSolarSurge() {
                     iconTooltip={iconTooltip}
                     setIconTooltip={setIconTooltip}
                     chartContainerRef={multiLineChartContainerRef}
-                    isModalOpen={isModalOpen}
-                    setIsModalOpen={setIsModalOpen}
+                    isModalOpen={isMultiLineModalOpen}
+                    onDownload={onDownload}
+                    setIsModalOpen={setIsMultiLineModalOpen}
                   />
                 )}
+              </div>
+
+              {/* Data source attribution */}
+              <div className="mt-4 pt-2 border-t border-gray-200">
+                <div className="text-xs text-gray-600">
+                  <div className="font-semibold">
+                    Data source:{" "}
+                    <span className="font-normal">
+                      Our World in Data - Energy Dataset
+                    </span>
+                  </div>
+                  <div className="mt-1 flex items-center gap-1">
+                    <a
+                      href="https://github.com/owid/energy-data"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 underline"
+                    >
+                      Learn more about this data
+                    </a>
+                  </div>
+                </div>
               </div>
 
               <p className="text-xs md:text-base mt-4 text-gray-700">
@@ -1152,206 +1180,328 @@ export default function AfricaSolarSurge() {
 
         {activeTab === "future" && (
           <section>
-            <h2 className="text-3xl font-bold mb-6">Future Outlook</h2>
-            <p className="text-gray-700 mb-6">
-              The future of solar energy in Africa looks promising, with
-              continued technological improvements, decreasing costs, and
-              increasing policy support.
-            </p>
+            <div className="text-center mb-8">
+              <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-orange-600 to-amber-500 bg-clip-text text-transparent">
+                The Solar Revolution Ahead
+              </h2>
+              <div className="w-24 h-1 bg-gradient-to-r from-orange-500 to-amber-400 mx-auto rounded-full"></div>
+            </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-              <div className="mb-2 flex h-fit items-center gap-3">
-                <h3 className="text-sm md:text-xl font-semibold flex-1">
-                  Top 10 African Countries by Solar Electricity Generation in{" "}
-                  <span className="text-blue-600 font-bold">{currentYear}</span>
-                </h3>
-                {/* RHS - Action buttons */}
-                <div className="w-fit h-8 flex justify-center gap-2 ">
-                  {/* Fullscreen toggle button */}
-                  <div
-                    onClick={() => toggleFullscreen()}
-                    onMouseEnter={() => {
-                      setIconTooltip({
-                        visible: true,
-                        content: isFullscreen
-                          ? `Exit Fullscreen`
-                          : `Fullscreen`,
-                      });
-                    }}
-                    onMouseLeave={() => {
-                      setIconTooltip({
-                        visible: false,
-                        content: ``,
-                      });
-                    }}
-                    className="relative w-fit rounded-sm hover:bg-gray-300 p-1.5 bg-gray-200 flex items-center justify-center cursor-pointer"
-                  >
-                    {iconTooltip?.visible &&
-                      (iconTooltip?.content === "Fullscreen" ||
-                        iconTooltip?.content === "Exit Fullscreen") && (
-                        <div className="absolute bg-white border border-[#ccc] px-[10px] py-[6px] -top-9 text-xs rounded-sm">
-                          {iconTooltip?.content}
-                        </div>
-                      )}
-                    <Icon
-                      icon={
-                        isFullscreen
-                          ? "material-symbols-light:fullscreen-exit"
-                          : "material-symbols-light:fullscreen"
-                      }
-                      className="w-5 h-5"
-                    />
-                  </div>
-
-                  {/* Download button */}
-                  <div
-                    onClick={() => setIsModalOpen(true)}
-                    onMouseEnter={() => {
-                      setIconTooltip({
-                        visible: true,
-                        content: `Download`,
-                      });
-                    }}
-                    onMouseLeave={() => {
-                      setIconTooltip({
-                        visible: false,
-                        content: ``,
-                      });
-                    }}
-                    className="relative rounded-sm hover:bg-gray-300 p-1.5 bg-gray-200 flex items-center justify-center cursor-pointer"
-                  >
-                    {iconTooltip?.visible &&
-                      iconTooltip?.content === "Download" && (
-                        <div className="absolute bg-white border border-[#ccc] px-[10px] py-[6px] -top-9 text-xs rounded-sm">
-                          {iconTooltip?.content}
-                        </div>
-                      )}
-                    <Icon
-                      icon={"material-symbols-light:download-sharp"}
-                      className="w-5 h-5"
-                    />
-                  </div>
-                </div>
+            <div className="mb-8 space-y-6">
+              <div className="relative">
+                <div className="absolute left-0 top-0 w-1 h-full bg-gradient-to-b from-orange-500 to-transparent rounded-full"></div>
+                <p className="text-lg text-gray-700 ml-6 leading-relaxed">
+                  Africa stands at the threshold of an energy transformation.
+                  With over{" "}
+                  <span className="font-semibold text-orange-600">
+                    600 million people
+                  </span>{" "}
+                  still lacking reliable electricity access, the continent faces
+                  both its greatest challenge and its most promising
+                  opportunity.
+                </p>
               </div>
 
-              <div className=" min-h-64 flex items-center justify-center rounded-lg border border-gray-200">
-                {/* Loading state */}
-                {loading ? (
-                  <div className="w-full flex justify-center items-center py-20">
-                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-yellow-500"></div>
-                  </div>
-                ) : (
-                  // Line chart
-                  <SolarShareInGeneration
-                    data={data}
-                    THEME={THEME}
-                    isFullscreen={isFullscreen}
-                    screenSize={screenSize}
-                    setScreenSize={setScreenSize}
-                    toggleFullscreen={toggleFullscreen}
-                    iconTooltip={iconTooltip}
-                    setIconTooltip={setIconTooltip}
-                    chartContainerRef={chartContainerRef}
-                    isModalOpen={isModalOpen}
-                    setIsModalOpen={setIsModalOpen}
-                  />
-                )}
+              <div className="bg-gradient-to-r from-orange-50 to-amber-50 p-6 rounded-xl border-l-4 border-orange-400">
+                <p className="text-gray-700 text-lg leading-relaxed">
+                  Solar power isn't just an energy solution for Africa — it's a{" "}
+                  <span className="font-semibold">
+                    catalyst for development
+                  </span>
+                  . With the world's highest solar irradiation levels and
+                  rapidly declining technology costs, African nations are
+                  uniquely positioned to bypass traditional energy
+                  infrastructure and leap directly into a clean energy future.
+                </p>
               </div>
 
-              <p className="text-xs md:text-base mt-4 text-gray-700">
-                In <b>2000</b>, solar power contributed virtually <b>nothing</b>{" "}
-                to Africa’s electricity generation. By <b>2023</b>, it had grown
-                to <b>3.09%</b> — a modest but meaningful rise. This growth is
-                less about environmental idealism and more about necessityThis
-                growth also reflects the growing recognition of solar as a
-                reliable and increasingly accessible power solution for many
-                African communities
+              <p className="text-gray-700 text-lg leading-relaxed">
+                The momentum is undeniable. From Morocco's massive Noor complex
+                to Kenya's innovative off-grid solutions, pioneering projects
+                across the continent are proving that solar energy can power
+                everything from entire cities to remote villages. The question
+                is no longer <em>if</em> Africa will embrace solar, but{" "}
+                <em>how quickly</em> it can scale.
               </p>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-              <h3 className="text-xl font-semibold mb-4">
-                Key Factors Influencing Future Growth
-              </h3>
+            <div className="  mb-8 ">
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-bold mb-3 text-gray-800">
+                  Forces Shaping Africa's Solar Future
+                </h3>
+                <p className="text-gray-600">
+                  Critical factors that will determine the pace and scale of
+                  solar adoption
+                </p>
+              </div>
 
-              <div className="grid md:grid-cols-2 gap-4 mb-6">
-                <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
-                  <h4 className="font-medium mb-2 text-orange-600">
-                    Policy Support
-                  </h4>
-                  <p className="text-gray-700">
-                    Government initiatives, renewable energy targets, and
-                    supportive regulatory frameworks will play crucial roles in
-                    accelerating solar adoption.
-                  </p>
+              <div className="grid md:grid-cols-2 gap-6 mb-8">
+                <div className="group hover:scale-105 transition-transform duration-300">
+                  <div className="bg-gradient-to-br  p-6 rounded-xl border  h-full">
+                    <div className="flex items-center mb-3">
+                      <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center mr-3">
+                        <span className="text-white font-bold text-lg">🏛️</span>
+                      </div>
+                      <h4 className="font-bold text-blue-700 text-lg">
+                        Policy & Governance
+                      </h4>
+                    </div>
+                    <p className="text-gray-700 leading-relaxed">
+                      Game-changing initiatives like the{" "}
+                      <strong>Desert to Power</strong> program aim to generate
+                      10,000 MW of solar capacity by 2030. Forward-thinking
+                      policies in Rwanda, Ghana, and South Africa are creating
+                      blueprints for continent-wide adoption.
+                    </p>
+                  </div>
                 </div>
 
-                <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
-                  <h4 className="font-medium mb-2 text-orange-600">
-                    Investment Trends
-                  </h4>
-                  <p className="text-gray-700">
-                    Increasing private sector involvement and international
-                    climate finance are creating new opportunities for
-                    large-scale solar projects.
-                  </p>
+                <div className="group hover:scale-105 transition-transform duration-300">
+                  <div className="bg-gradient-to-br  p-6 rounded-xl border h-full">
+                    <div className="flex items-center mb-3">
+                      <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center mr-3">
+                        <span className="text-white font-bold text-lg">💰</span>
+                      </div>
+                      <h4 className="font-bold text-green-700 text-lg">
+                        Capital & Investment
+                      </h4>
+                    </div>
+                    <p className="text-gray-700 leading-relaxed">
+                      Over <strong>$20 billion</strong> in clean energy
+                      commitments are flowing into Africa. Development finance
+                      institutions, pension funds, and impact investors are
+                      recognizing solar's potential for both returns and
+                      development impact.
+                    </p>
+                  </div>
                 </div>
 
-                <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
-                  <h4 className="font-medium mb-2 text-orange-600">
-                    Technological Advancements
-                  </h4>
-                  <p className="text-gray-700">
-                    Improvements in solar panel efficiency, energy storage
-                    solutions, and mini-grid technologies will continue to drive
-                    adoption.
-                  </p>
+                <div className="group hover:scale-105 transition-transform duration-300">
+                  <div className="bg-gradient-to-br p-6 rounded-xl border h-full">
+                    <div className="flex items-center mb-3">
+                      <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center mr-3">
+                        <span className="text-white font-bold text-lg">⚡</span>
+                      </div>
+                      <h4 className="font-bold text-purple-700 text-lg">
+                        Tech Innovation
+                      </h4>
+                    </div>
+                    <p className="text-gray-700 leading-relaxed">
+                      Revolutionary advances in <strong>battery storage</strong>
+                      , mini-grids, and pay-as-you-go solar systems are making
+                      clean energy accessible to Africa's most remote
+                      communities. Local innovation hubs are driving solutions
+                      designed for African contexts.
+                    </p>
+                  </div>
                 </div>
 
-                <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
-                  <h4 className="font-medium mb-2 text-orange-600">
-                    Climate Commitments
-                  </h4>
-                  <p className="text-gray-700">
-                    National and international climate goals are pushing for
-                    accelerated transitions to renewable energy sources,
-                    including solar.
-                  </p>
+                <div className="group hover:scale-105 transition-transform duration-300">
+                  <div className="bg-gradient-to-br  p-6 rounded-xl border h-full">
+                    <div className="flex items-center mb-3">
+                      <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center mr-3">
+                        <span className="text-white font-bold text-lg">👥</span>
+                      </div>
+                      <h4 className="font-bold text-orange-700 text-lg">
+                        Human Capital
+                      </h4>
+                    </div>
+                    <p className="text-gray-700 leading-relaxed">
+                      A new generation of African energy entrepreneurs,
+                      engineers, and technicians is emerging. Training programs
+                      and local manufacturing are building the foundation for a{" "}
+                      <strong>homegrown solar economy</strong>.
+                    </p>
+                  </div>
                 </div>
               </div>
+
+              <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-red-50 p-6 rounded-xl border border-amber-200">
+                <div className="flex items-start">
+                  <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center mr-4 flex-shrink-0 mt-1">
+                    <span className="text-white font-bold text-xl">☀️</span>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-800 text-lg mb-2">
+                      The Transformation Promise
+                    </h4>
+                    <p className="text-gray-700 leading-relaxed">
+                      Solar energy represents more than clean electricity for
+                      Africa — it's a pathway to{" "}
+                      <strong>economic independence</strong>,{" "}
+                      <strong>industrial growth</strong>, and{" "}
+                      <strong>social equity</strong>. As technology advances,
+                      solar power could electrify the continent's rural
+                      heartlands, power its growing cities, and fuel the next
+                      chapter of African development.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-center bg-gradient-to-r from-orange-600 to-amber-500 text-white p-8 rounded-2xl">
+              <h3 className="text-2xl font-bold mb-4">
+                The Next Decade is Critical
+              </h3>
+              <p className="text-lg leading-relaxed opacity-95">
+                With the right investments, policies, and partnerships, Africa
+                could become the world's fastest-growing solar market. The
+                foundation is being laid today — the solar revolution starts
+                now.
+              </p>
             </div>
           </section>
         )}
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-800 text-white py-8 px-4">
-        <div className="max-w-5xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-8">
-            <div>
-              <h3 className="text-xl font-semibold mb-4">
-                About This Analysis
-              </h3>
-              <p className="text-gray-300">
-                This article examines solar energy adoption and impact across
-                Africa from 2000 to 2022, using data on electricity generation,
-                consumption, and renewable energy adoption.
-              </p>
+      {/* Footer */}
+      <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_30%_20%,rgba(251,191,36,0.3),transparent_50%)]"></div>
+          <div className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_80%,rgba(249,115,22,0.2),transparent_50%)]"></div>
+        </div>
+
+        <div className="relative z-10 py-12 px-4">
+          <div className="max-w-6xl mx-auto">
+            {/* Main Footer Content */}
+            <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-8 mb-8">
+              {/* About Section */}
+              <div className="lg:col-span-1">
+                <div className="flex items-center mb-4">
+                  <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-amber-500 rounded-lg flex items-center justify-center mr-3">
+                    <span className="text-white font-bold text-xl">☀️</span>
+                  </div>
+                  <h3 className="text-xl font-bold bg-gradient-to-r from-orange-400 to-amber-300 bg-clip-text text-transparent">
+                    Africa's Solar Surge
+                  </h3>
+                </div>
+                <p className="text-gray-300 leading-relaxed mb-4">
+                  A comprehensive data-driven exploration of solar electricity
+                  generation across Africa from 2000-2023, revealing the
+                  continent's renewable energy transformation through
+                  interactive visualizations and insights.
+                </p>
+                <div className="flex space-x-4">
+                  <div className="flex items-center text-sm text-gray-400">
+                    <span className="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+                    <span>Interactive Data</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-400">
+                    <span className="w-2 h-2 bg-blue-400 rounded-full mr-2"></span>
+                    <span>Real Insights</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Data & Methodology */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4 flex items-center">
+                  <span className="w-6 h-6 bg-blue-500 rounded-md flex items-center justify-center mr-2 text-sm">
+                    📊
+                  </span>
+                  Data & Methodology
+                </h3>
+                <div className="space-y-3">
+                  <div className="bg-gray-800/50 p-3 rounded-lg border border-gray-700">
+                    <p className="text-gray-300 text-sm leading-relaxed">
+                      <strong className="text-white">Primary Source:</strong>{" "}
+                      Our World in Data Energy Dataset
+                    </p>
+                    <a
+                      href="https://ourworldindata.org/energy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center text-orange-400 hover:text-orange-300 text-sm mt-1 group"
+                    >
+                      <span>Explore OWID Energy Data</span>
+                      <span className="ml-1 group-hover:translate-x-1 transition-transform">
+                        →
+                      </span>
+                    </a>
+                  </div>
+                  <div className="bg-gray-800/50 p-3 rounded-lg border border-gray-700">
+                    <p className="text-gray-300 text-sm leading-relaxed">
+                      <strong className="text-white">Key Metrics:</strong> Total
+                      generation (TWh), per capita output (kWh), growth rates,
+                      and regional comparisons
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Technical & Resources */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4 flex items-center">
+                  <span className="w-6 h-6 bg-purple-500 rounded-md flex items-center justify-center mr-2 text-sm">
+                    ⚡
+                  </span>
+                  Resources & Links
+                </h3>
+                <div className="space-y-3">
+                  <a
+                    href="https://github.com/owid/energy-data"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center p-3 bg-gray-800/50 rounded-lg border border-gray-700 hover:border-orange-500 hover:bg-gray-800/70 transition-all group"
+                  >
+                    <span className="w-8 h-8 bg-gray-700 rounded-lg flex items-center justify-center mr-3 group-hover:bg-orange-500 transition-colors">
+                      <span className="text-sm">🔗</span>
+                    </span>
+                    <div>
+                      <div className="text-white font-medium text-sm">
+                        Dataset Repository
+                      </div>
+                      <div className="text-gray-400 text-xs">
+                        Raw data & documentation
+                      </div>
+                    </div>
+                  </a>
+                </div>
+              </div>
             </div>
-            <div>
-              <h3 className="text-xl font-semibold mb-4">Data Sources</h3>
-              <p className="text-gray-300">
-                Data compiled from national energy agencies, international
-                energy organizations, and renewable energy tracking initiatives
-                across the African continent.
-              </p>
+
+            {/* Technology Stack */}
+            <div className="bg-gradient-to-r from-gray-800/50 to-gray-700/50 p-6 rounded-xl border border-gray-600 mb-8">
+              <h4 className="text-lg font-semibold mb-4 text-center">
+                Built With
+              </h4>
+              <div className="flex flex-wrap justify-center gap-4">
+                <div className="flex items-center bg-gray-700/50 px-4 py-2 rounded-full">
+                  <span className="w-6 h-6 bg-blue-500 rounded-md flex items-center justify-center mr-2 text-xs">
+                    ⚛️
+                  </span>
+                  <span className="text-sm font-medium">React</span>
+                </div>
+                <div className="flex items-center bg-gray-700/50 px-4 py-2 rounded-full">
+                  <span className="w-6 h-6 bg-cyan-500 rounded-md flex items-center justify-center mr-2 text-xs">
+                    🎨
+                  </span>
+                  <span className="text-sm font-medium">Tailwind CSS</span>
+                </div>
+                <div className="flex items-center bg-gray-700/50 px-4 py-2 rounded-full">
+                  <span className="w-6 h-6 bg-orange-500 rounded-md flex items-center justify-center mr-2 text-xs">
+                    📈
+                  </span>
+                  <span className="text-sm font-medium">D3.js</span>
+                </div>
+              </div>
             </div>
-          </div>
-          <div className="mt-8 pt-8 border-t border-gray-700 text-center text-gray-400">
-            <p>
-              © 2025 Africa's Solar Surge Analysis. All data visualizations
-              created with React and Recharts.
-            </p>
+
+            {/* Bottom Section */}
+            <div className="pt-8 border-t border-gray-700">
+              <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="flex items-center space-x-6 text-sm text-gray-400">
+                  <div className="flex items-center">
+                    <span className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
+                    <span>Data Updated: 23rd May, 2025</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </footer>

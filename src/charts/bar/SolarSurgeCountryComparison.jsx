@@ -326,25 +326,6 @@ const SolarSurgeCountryComparison = ({
       setCompareYear(year);
     }
   };
-  // Function to determine bar opacity based on selection state
-  const getBarOpacity = (country) => {
-    if (selectedCountries.length === 0) return 0.8; // Default opacity
-    return selectedCountries.includes(country) ? 1 : 0.3; // Higher opacity for selected
-  };
-
-  // Function to determine bar color based on selection state
-  const getBarFill = (country) => {
-    const baseColor = colorByRegion ? getCountryColor(country) : "#3b82f6"; // Blue default or region color
-    if (selectedCountries.length === 0) return baseColor;
-    return selectedCountries.includes(country) ? baseColor : `${baseColor}80`; // Add transparency for non-selected
-  };
-
-  // Function to add visual highlight to selected countries
-  const getBarStyle = (country) => {
-    return selectedCountries.includes(country)
-      ? { stroke: "#000", strokeWidth: 1 }
-      : {};
-  };
 
   // Update chart dimensions on window resize
   useEffect(() => {
@@ -373,81 +354,8 @@ const SolarSurgeCountryComparison = ({
 
   return (
     <div className="relative w-full min-h-fit h-auto">
-      {/* Hidden chart for export */}
-      {/* <div ref={chartRef} className="fixed -top-[200%]">
-        <div className="px-3 my-10 mx-auto w-[1000px] rounded-md relative">
-          <div className="mx-auto w-[90%] h-full py-5">
-            <div className="mb-3 flex justify-between">
-              <div
-                className={`${
-                  compareYear ? "opacity-100" : "opacity-0"
-                } text-lg font-semibold`}
-              >
-                {title}, {currentYear}
-                {compareYear && ` vs ${compareYear}`}
-              </div>
-            </div>
-
-            <svg width={width} height={height}>
-              <g transform={`translate(${margins.left}, ${margins.top})`}>
-                {filteredData?.map((datum) => (
-                  <text
-                    key={`country-${datum.country}`}
-                    fill={"#000"}
-                    x={-5}
-                    y={yScale(datum?.country) + yScale.bandwidth() / 2}
-                    dy={".36em"}
-                    fontSize={12}
-                    fontWeight={400}
-                    style={{ textAnchor: "end" }}
-                  >
-                    {datum["country"]}
-                  </text>
-                ))}
-
-                {filteredData?.map((datum) => (
-                  <rect
-                    key={`bar-${datum.country}`}
-                    x={0}
-                    width={xScale(datum["solar_electricity"] || 0)}
-                    height={yScale.bandwidth()}
-                    fill={getCountryColor(datum.country)}
-                    y={yScale(datum?.country)}
-                  />
-                ))}
-
-                {compareYear &&
-                  filteredData?.map((datum) => (
-                    <rect
-                      key={`bar-compare-${datum.country}`}
-                      x={0}
-                      width={xScale(datum["solar_electricity"] || 0)}
-                      height={yScale.bandwidth() / 2}
-                      fill={"rgba(0,0,0,0.3)"}
-                      y={yScale(datum?.country) + yScale.bandwidth() / 2}
-                    />
-                  ))}
-
-                {filteredData?.map((datum) => (
-                  <text
-                    key={`pop-${datum.country}`}
-                    fill={"#000"}
-                    x={xScale(datum[currentYear] || 0) + 5}
-                    y={yScale(datum?.country) + yScale.bandwidth() / 2}
-                    dy={".36em"}
-                    fontSize={12}
-                    fontWeight={400}
-                  >
-                    {datum["solar_electricity"]} TWh
-                  </text>
-                ))}
-              </g>
-            </svg>
-          </div>
-        </div>
-      </div> */}
-      {/* Main chart container */}
-      <div ref={chartRef} className="fixed -top-[200%]">
+      {/* Hidden chart container */}
+      <div ref={chartRef} className="fixed -top-[300%]">
         <div className="mx-auto w-full md:w-[90%] h-full py-5">
           {/* Chart header */}
           <div className="mb-3 flex flex-wrap justify-between items-center gap-2">
@@ -714,66 +622,6 @@ const SolarSurgeCountryComparison = ({
                   </div>
                 </div>
               )}
-            </div>
-          </div>
-        )}
-
-        {/* Sharing Modal */}
-        {isSharingModalOpen && (
-          <div className="absolute w-full h-full flex items-start justify-center">
-            <div
-              onClick={() => setIsSharingModalOpen(false)}
-              className="cursor-pointer absolute w-full h-full z-[10] bg-black opacity-40"
-            ></div>
-            <div className="mt-10 rounded-sm w-[80%] max-w-md h-auto p-4 bg-white z-[20]">
-              <div className="flex justify-between items-center text-xs font-semibold text-gray-500">
-                <div className="">SHARE</div>
-                <Icon
-                  icon="ic:round-cancel"
-                  className="hover:rotate-45 transition-all ease-in-out duration-300 cursor-pointer"
-                  width="24"
-                  height="24"
-                  onClick={() => setIsSharingModalOpen(false)}
-                />
-              </div>
-
-              <div className="mt-6 grid grid-cols-2 gap-4">
-                <div
-                  onClick={() => handleShare("twitter")}
-                  className="flex flex-col items-center p-4 bg-gray-100 hover:bg-gray-200 rounded cursor-pointer"
-                >
-                  <Icon icon="mdi:twitter" width="24" height="24" />
-                  <span className="mt-2 text-sm">Twitter</span>
-                </div>
-                <div
-                  onClick={() => handleShare("facebook")}
-                  className="flex flex-col items-center p-4 bg-gray-100 hover:bg-gray-200 rounded cursor-pointer"
-                >
-                  <Icon icon="mdi:facebook" width="24" height="24" />
-                  <span className="mt-2 text-sm">Facebook</span>
-                </div>
-                <div
-                  onClick={() => handleShare("linkedin")}
-                  className="flex flex-col items-center p-4 bg-gray-100 hover:bg-gray-200 rounded cursor-pointer"
-                >
-                  <Icon icon="mdi:linkedin" width="24" height="24" />
-                  <span className="mt-2 text-sm">LinkedIn</span>
-                </div>
-                <div
-                  onClick={() => handleShare("email")}
-                  className="flex flex-col items-center p-4 bg-gray-100 hover:bg-gray-200 rounded cursor-pointer"
-                >
-                  <Icon icon="mdi:email" width="24" height="24" />
-                  <span className="mt-2 text-sm">Email</span>
-                </div>
-                <div
-                  onClick={() => handleShare("copy")}
-                  className="flex flex-col items-center p-4 bg-gray-100 hover:bg-gray-200 rounded cursor-pointer col-span-2"
-                >
-                  <Icon icon="mdi:content-copy" width="24" height="24" />
-                  <span className="mt-2 text-sm">Copy Link</span>
-                </div>
-              </div>
             </div>
           </div>
         )}
@@ -1149,38 +997,6 @@ const SolarSurgeCountryComparison = ({
               </div>
             </div>
           )}
-
-          {/* {selectedCountries.length > 0 && (
-            <div className="mt-4 flex items-center gap-2">
-              <button
-                className="text-sm py-1 px-3 bg-gray-100 hover:bg-gray-200 rounded flex items-center gap-1"
-                onClick={() => {
-                  // Toggle between filtered and unfiltered view
-                  // You can implement this by adding a state variable
-                  setShowOnlySelected(!showOnlySelected);
-                }}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M4 12a8 8 0 0 1 8-8"></path>
-                  <path d="M12 4a8 8 0 0 1 8 8"></path>
-                  <path d="M12 20a8 8 0 0 1-8-8"></path>
-                  <path d="M20 12a8 8 0 0 1-8 8"></path>
-                  <circle cx="12" cy="12" r="2"></circle>
-                </svg>
-                {showOnlySelected ? "Show all countries" : "Focus on selected"}
-              </button>
-            </div>
-          )} */}
 
           {/* Tooltip */}
           {tooltip.visible && (

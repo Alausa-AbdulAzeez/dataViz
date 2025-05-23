@@ -1,12 +1,18 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
+import { Icon } from "@iconify/react";
 
 const SolarElectricityChart = ({
   isFullscreen,
   chartContainerRef,
   screenSize,
+  isModalOpen,
+  setIsModalOpen,
   setScreenSize,
+  onDownload = () => {},
 }) => {
+  const [activeDownloadTab, setActiveDownloadTab] = useState("Chart");
+
   const [chartDimensions, setChartDimensions] = useState({
     width: 0,
     height: 0,
@@ -14,6 +20,7 @@ const SolarElectricityChart = ({
   const [visibleCountries, setVisibleCountries] = useState({});
   const [tooltip, setTooltip] = useState(null);
   const [activeCountry, setActiveCountry] = useState(null);
+  const chartRef = useRef(null);
 
   const data = [
     // Nigeria
@@ -626,6 +633,19 @@ const SolarElectricityChart = ({
     },
   ];
 
+  // Handle downloads
+  const handleDownload = () => {
+    if (onDownload && typeof onDownload === "function") {
+      onDownload("PNG", chartRef);
+    }
+  };
+
+  const handleFullCSVDownload = () => {
+    if (onDownload && typeof onDownload === "function") {
+      onDownload("FullCSV", { data });
+    }
+  };
+
   const width = chartDimensions.width || 800;
   const height = chartDimensions.height || 500;
   const margin = {
@@ -758,216 +778,534 @@ const SolarElectricityChart = ({
   const legendLayout = getLegendLayout();
 
   return (
-    <svg
-      ref={chartContainerRef}
-      width={width}
-      height={height}
-      className={`${
-        isFullscreen
-          ? "w-full h-full fixed inset-0 z-50 max-w-none rounded-none"
-          : ""
-      } bg-white `}
-    >
-      <g transform={`translate(${margin.left}, ${margin.top})`}>
-        {/* X Grid & Labels */}
-        {xTicks.map((year, index) => (
-          <g key={`x-${year}-${index}`}>
-            <line
-              x1={xScale(year)}
-              x2={xScale(year)}
-              y1={0}
-              y2={innerHeight}
-              stroke="#ddd"
-              strokeDasharray="4,4"
-            />
+    <div className="relative w-full min-h-fit h-auto">
+      {/* Hidden Chart  */}
+      <div ref={chartRef} className="fixed -top-[300%]">
+        <svg width={width} height={height}>
+          <g transform={`translate(${margin.left}, ${margin.top})`}>
+            {/* X Grid & Labels */}
+            {xTicks.map((year, index) => (
+              <g key={`x-${year}-${index}`}>
+                <line
+                  x1={xScale(year)}
+                  x2={xScale(year)}
+                  y1={0}
+                  y2={innerHeight}
+                  stroke="#ddd"
+                  strokeDasharray="4,4"
+                />
+                <text
+                  x={xScale(year)}
+                  y={innerHeight + 20}
+                  textAnchor="middle"
+                  fontSize={12}
+                  fill="#555"
+                >
+                  {year}
+                </text>
+              </g>
+            ))}
+
+            {/* Y Axis */}
+            {yScale.ticks(5).map((tick) => (
+              <g key={`y-${tick}`}>
+                <line
+                  x1={0}
+                  x2={innerWidth}
+                  y1={yScale(tick)}
+                  y2={yScale(tick)}
+                  stroke="#eee"
+                />
+                <text
+                  x={-10}
+                  y={yScale(tick)}
+                  textAnchor="end"
+                  alignmentBaseline="middle"
+                  fontSize={12}
+                  fill="#555"
+                >
+                  {tick}
+                </text>
+              </g>
+            ))}
+
+            {/* Lines */}
+            {grouped.map((group) => (
+              <path
+                key={`line-${group.country}`}
+                d={line(group.values)}
+                fill="none"
+                stroke={color(group.country)}
+                strokeWidth={
+                  activeCountry === null || activeCountry === group.country
+                    ? screenSize === "small"
+                      ? 1.5
+                      : 3
+                    : 1
+                }
+                opacity={
+                  activeCountry === null || activeCountry === group.country
+                    ? 1
+                    : 0.3
+                }
+              />
+            ))}
+
+            {/* Dots */}
+            {grouped.map((group) =>
+              group.values.map((d, i) => (
+                <circle
+                  key={`${group.country}-${i}`}
+                  opacity={
+                    activeCountry === null || activeCountry === group.country
+                      ? 1
+                      : 0.3
+                  }
+                  cx={xScale(d.year)}
+                  cy={yScale(d.solar_electricity)}
+                  r={screenSize === "small" ? 1.5 : 4}
+                  fill={color(group.country)}
+                  onMouseEnter={() =>
+                    setTooltip({
+                      x: xScale(d.year),
+                      y: yScale(d.solar_electricity),
+                      country: d.country,
+                      year: d.year,
+                      solar_electricity: d.solar_electricity,
+                    })
+                  }
+                  onMouseLeave={() => setTooltip(null)}
+                />
+              ))
+            )}
+
+            {/* Title */}
+            {isFullscreen && (
+              <text
+                x={innerWidth / 2}
+                y={-20}
+                textAnchor="middle"
+                fontSize={18}
+                fontWeight="bold"
+                fill="#333"
+              >
+                Solar Generation Growth in Selected African Nations
+              </text>
+            )}
+
+            {/* Y Axis Label */}
             <text
-              x={xScale(year)}
-              y={innerHeight + 20}
+              transform={`rotate(-90)`}
+              x={-innerHeight / 2}
+              y={-50}
               textAnchor="middle"
-              fontSize={12}
-              fill="#555"
-            >
-              {year}
-            </text>
-          </g>
-        ))}
-
-        {/* Y Axis */}
-        {yScale.ticks(5).map((tick) => (
-          <g key={`y-${tick}`}>
-            <line
-              x1={0}
-              x2={innerWidth}
-              y1={yScale(tick)}
-              y2={yScale(tick)}
-              stroke="#eee"
-            />
-            <text
-              x={-10}
-              y={yScale(tick)}
-              textAnchor="end"
-              alignmentBaseline="middle"
-              fontSize={12}
-              fill="#555"
-            >
-              {tick}
-            </text>
-          </g>
-        ))}
-
-        {/* Lines */}
-        {grouped.map((group) => (
-          <path
-            key={`line-${group.country}`}
-            d={line(group.values)}
-            fill="none"
-            stroke={color(group.country)}
-            strokeWidth={
-              activeCountry === null || activeCountry === group.country
-                ? screenSize === "small"
-                  ? 1.5
-                  : 3
-                : 1
-            }
-            opacity={
-              activeCountry === null || activeCountry === group.country
-                ? 1
-                : 0.3
-            }
-          />
-        ))}
-
-        {/* Dots */}
-        {grouped.map((group) =>
-          group.values.map((d, i) => (
-            <circle
-              key={`${group.country}-${i}`}
-              opacity={
-                activeCountry === null || activeCountry === group.country
-                  ? 1
-                  : 0.3
-              }
-              cx={xScale(d.year)}
-              cy={yScale(d.solar_electricity)}
-              r={screenSize === "small" ? 1.5 : 4}
-              fill={color(group.country)}
-              onMouseEnter={() =>
-                setTooltip({
-                  x: xScale(d.year),
-                  y: yScale(d.solar_electricity),
-                  country: d.country,
-                  year: d.year,
-                  solar_electricity: d.solar_electricity,
-                })
-              }
-              onMouseLeave={() => setTooltip(null)}
-            />
-          ))
-        )}
-
-        {/* Title */}
-        {isFullscreen && (
-          <text
-            x={innerWidth / 2}
-            y={-20}
-            textAnchor="middle"
-            fontSize={18}
-            fontWeight="bold"
-            fill="#333"
-          >
-            Solar Generation Growth in Selected African Nations
-          </text>
-        )}
-
-        {/* Y Axis Label */}
-        <text
-          transform={`rotate(-90)`}
-          x={-innerHeight / 2}
-          y={-50}
-          textAnchor="middle"
-          fontSize={14}
-          fill="#333"
-        >
-          Solar Electricity (TWh)
-        </text>
-      </g>
-
-      {/* Responsive Legend at Bottom */}
-      <g
-        transform={`translate(${margin.left}, ${
-          innerHeight + margin.top + 40
-        })`}
-      >
-        {legendLayout.map(({ country, x, y }) => (
-          <g
-            key={country}
-            transform={`translate(${x}, ${y})`}
-            onMouseEnter={() => setActiveCountry(country)}
-            onMouseLeave={() => setActiveCountry(null)}
-            onClick={() => toggleCountryVisibility(country)}
-            style={{ cursor: "pointer" }}
-          >
-            <rect
-              width={15}
-              height={15}
-              fill={color(country)}
-              opacity={1}
-              stroke={activeCountry === country ? "#999" : "none"}
-              strokeWidth={2}
-              style={{ transition: "opacity 0.3s, stroke 0.3s" }}
-            />
-            <text
-              x={20}
-              y={12}
-              fontSize={screenSize === "small" ? 11 : 13}
+              fontSize={14}
               fill="#333"
-              opacity={visibleCountries[country] ? 1 : 0.5}
-              style={{ transition: "opacity 0.3s" }}
             >
-              {screenSize === "small" && country === "South Africa"
-                ? "S. Africa"
-                : country}
+              Solar Electricity (TWh)
             </text>
           </g>
-        ))}
-      </g>
 
-      {/* tooltip */}
-      {tooltip && (
-        <foreignObject
-          x={
-            screenSize === "small"
-              ? "calc(50% - 128px)"
-              : tooltip.x + 700 > window.innerWidth
-              ? `${tooltip.x - 60}px`
-              : `${tooltip.x + margin.left + 10}px`
-          }
-          // x={tooltip.x + margin.left + 10}
-
-          y={tooltip.y + margin.top - 30}
-          width={120}
-          height={150}
-        >
-          <div
-            xmlns="http://www.w3.org/1999/xhtml"
-            style={{
-              background: "white",
-              border: "1px solid #ccc",
-              borderRadius: "4px",
-              padding: "5px 8px",
-              fontSize: 12,
-              pointerEvents: "none",
-            }}
+          {/* Responsive Legend at Bottom */}
+          <g
+            transform={`translate(${margin.left}, ${
+              innerHeight + margin.top + 40
+            })`}
           >
-            <div>
-              <strong>{tooltip.country}</strong>
+            {legendLayout.map(({ country, x, y }) => (
+              <g
+                key={country}
+                transform={`translate(${x}, ${y})`}
+                onMouseEnter={() => setActiveCountry(country)}
+                onMouseLeave={() => setActiveCountry(null)}
+                onClick={() => toggleCountryVisibility(country)}
+                style={{ cursor: "pointer" }}
+              >
+                <rect
+                  width={15}
+                  height={15}
+                  fill={color(country)}
+                  opacity={1}
+                  stroke={activeCountry === country ? "#999" : "none"}
+                  strokeWidth={2}
+                  style={{ transition: "opacity 0.3s, stroke 0.3s" }}
+                />
+                <text
+                  x={20}
+                  y={12}
+                  fontSize={screenSize === "small" ? 11 : 13}
+                  fill="#333"
+                  opacity={visibleCountries[country] ? 1 : 0.5}
+                  style={{ transition: "opacity 0.3s" }}
+                >
+                  {screenSize === "small" && country === "South Africa"
+                    ? "S. Africa"
+                    : country}
+                </text>
+              </g>
+            ))}
+          </g>
+
+          {/* tooltip */}
+          {tooltip && (
+            <foreignObject
+              x={
+                screenSize === "small"
+                  ? "calc(50% - 128px)"
+                  : tooltip.x + 700 > window.innerWidth
+                  ? `${tooltip.x - 60}px`
+                  : `${tooltip.x + margin.left + 10}px`
+              }
+              // x={tooltip.x + margin.left + 10}
+
+              y={tooltip.y + margin.top - 30}
+              width={120}
+              height={150}
+            >
+              <div
+                xmlns="http://www.w3.org/1999/xhtml"
+                style={{
+                  background: "white",
+                  border: "1px solid #ccc",
+                  borderRadius: "4px",
+                  padding: "5px 8px",
+                  fontSize: 12,
+                  pointerEvents: "none",
+                }}
+              >
+                <div>
+                  <strong>{tooltip.country}</strong>
+                </div>
+                <div>Year: {tooltip.year}</div>
+                <div>Solar: {tooltip.solar_electricity} TWh</div>
+              </div>
+            </foreignObject>
+          )}
+        </svg>
+      </div>
+
+      {/* Main Chart  */}
+      <div
+        ref={chartContainerRef}
+        className={`bg-white flex justify-center px-3 my-5 mx-auto w-full max-w-screen-xl rounded-md relative ${
+          isFullscreen ? "h-full" : ""
+        }`}
+      >
+        {/* Download Modal */}
+        {isModalOpen && (
+          <div className="absolute w-full h-full flex items-start justify-center">
+            <div
+              onClick={() => setIsModalOpen(false)}
+              className="cursor-pointer absolute w-full h-full z-[10] bg-black opacity-40"
+            ></div>
+            <div className="mt-10 rounded-sm w-[80%] h-auto p-4 bg-white z-[20] cursor-pointer">
+              <div className="flex justify-between items-center text-xs font-semibold text-gray-500">
+                <div className="">DOWNLOAD</div>
+                <Icon
+                  icon="ic:round-cancel"
+                  className="hover:rotate-45 transition-all ease-in-out duration-300"
+                  width="24"
+                  height="24"
+                  onClick={() => setIsModalOpen(false)}
+                />
+              </div>
+              <div className="mt-4 flex items-center gap-1.5 w-full justify-center">
+                <div
+                  onClick={() => setActiveDownloadTab("Chart")}
+                  className={`${
+                    activeDownloadTab === "Chart" && "bg-gray-300"
+                  } flex-1 bg-gray-100 hover:bg-gray-200 text-sm flex items-center justify-center w-fit p-1 gap-1 cursor-pointer`}
+                >
+                  <Icon icon={"hugeicons:chart"} className="h-4 w-4" />
+                  <span>Chart</span>
+                </div>
+                <div
+                  onClick={() => setActiveDownloadTab("Data")}
+                  className={`text-sm flex-1 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-sm flex items-center justify-center w-fit p-1 gap-1 cursor-pointer ${
+                    activeDownloadTab === "Data" && "bg-gray-300"
+                  }`}
+                >
+                  <Icon
+                    icon={"icon-park-twotone:data-four"}
+                    className="h-4 w-4"
+                  />
+                  <span>Data</span>
+                </div>
+              </div>
+
+              {/* Download options */}
+              {activeDownloadTab === "Chart" && (
+                <div className="mt-4 flex flex-col w-full items-center gap-1.5">
+                  <div
+                    onClick={handleDownload}
+                    className="w-full h-[100px] rounded-sm hover:bg-slate-200 items-center justify-center flex flex-col bg-slate-100"
+                  >
+                    <div className="font-medium text-sm md:text-lg">
+                      Image (PNG)
+                    </div>
+                    <div className="text-xs md:text-sm">
+                      Suitable for most use cases
+                    </div>
+                  </div>
+                  {/* <div
+                    onClick={handleSVGDownload}
+                    className="w-full cursor-not-allowed opacity-50 rounded-sm hover:bg-slate-200 items-center h-[100px] justify-center flex flex-col bg-slate-100 cursor-pointer"
+                  >
+                    <div className="font-medium text-lg">
+                      Vector Image (SVG){" "}
+                      <span className="ml-2 text-red-950 font-bold">
+                        Not Available
+                      </span>
+                    </div>
+                    <div className="text-sm">
+                      Scalable format, ideal for editing
+                    </div>
+                  </div> */}
+                </div>
+              )}
+
+              {activeDownloadTab === "Data" && (
+                <div className="mt-4 flex flex-col w-full items-center gap-1.5">
+                  <div className="flex justify-start w-full mb-4 py-2 border-b border-gray-200">
+                    <div className="text-xs text-gray-600">
+                      <div className="font-semibold">
+                        Data source:{" "}
+                        <span className="font-normal">
+                          Our World in Data - Energy Dataset
+                        </span>
+                      </div>
+                      <div className="mt-1 flex items-center gap-1">
+                        <a
+                          href="https://github.com/owid/energy-data"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 underline"
+                        >
+                          Learn more about this data
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    onClick={handleFullCSVDownload}
+                    className="w-full h-[100px] rounded-sm hover:bg-slate-200 items-center justify-center flex flex-col bg-slate-100 cursor-pointer"
+                  >
+                    <div className="font-medium md:text-lg text-sm">
+                      Complete Dataset (CSV)
+                    </div>
+                    <div className="text-xs md:text-sm text-center">
+                      Download all years (2000 - 2023)
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-            <div>Year: {tooltip.year}</div>
-            <div>Solar: {tooltip.solar_electricity} TWh</div>
           </div>
-        </foreignObject>
-      )}
-    </svg>
+        )}
+
+        <svg width={width} height={height}>
+          <g transform={`translate(${margin.left}, ${margin.top})`}>
+            {/* X Grid & Labels */}
+            {xTicks.map((year, index) => (
+              <g key={`x-${year}-${index}`}>
+                <line
+                  x1={xScale(year)}
+                  x2={xScale(year)}
+                  y1={0}
+                  y2={innerHeight}
+                  stroke="#ddd"
+                  strokeDasharray="4,4"
+                />
+                <text
+                  x={xScale(year)}
+                  y={innerHeight + 20}
+                  textAnchor="middle"
+                  fontSize={12}
+                  fill="#555"
+                >
+                  {year}
+                </text>
+              </g>
+            ))}
+
+            {/* Y Axis */}
+            {yScale.ticks(5).map((tick) => (
+              <g key={`y-${tick}`}>
+                <line
+                  x1={0}
+                  x2={innerWidth}
+                  y1={yScale(tick)}
+                  y2={yScale(tick)}
+                  stroke="#eee"
+                />
+                <text
+                  x={-10}
+                  y={yScale(tick)}
+                  textAnchor="end"
+                  alignmentBaseline="middle"
+                  fontSize={12}
+                  fill="#555"
+                >
+                  {tick}
+                </text>
+              </g>
+            ))}
+
+            {/* Lines */}
+            {grouped.map((group) => (
+              <path
+                key={`line-${group.country}`}
+                d={line(group.values)}
+                fill="none"
+                stroke={color(group.country)}
+                strokeWidth={
+                  activeCountry === null || activeCountry === group.country
+                    ? screenSize === "small"
+                      ? 1.5
+                      : 3
+                    : 1
+                }
+                opacity={
+                  activeCountry === null || activeCountry === group.country
+                    ? 1
+                    : 0.3
+                }
+              />
+            ))}
+
+            {/* Dots */}
+            {grouped.map((group) =>
+              group.values.map((d, i) => (
+                <circle
+                  key={`${group.country}-${i}`}
+                  opacity={
+                    activeCountry === null || activeCountry === group.country
+                      ? 1
+                      : 0.3
+                  }
+                  cx={xScale(d.year)}
+                  cy={yScale(d.solar_electricity)}
+                  r={screenSize === "small" ? 1.5 : 4}
+                  fill={color(group.country)}
+                  onMouseEnter={() =>
+                    setTooltip({
+                      x: xScale(d.year),
+                      y: yScale(d.solar_electricity),
+                      country: d.country,
+                      year: d.year,
+                      solar_electricity: d.solar_electricity,
+                    })
+                  }
+                  onMouseLeave={() => setTooltip(null)}
+                />
+              ))
+            )}
+
+            {/* Title */}
+            {isFullscreen && (
+              <text
+                x={innerWidth / 2}
+                y={-20}
+                textAnchor="middle"
+                fontSize={18}
+                fontWeight="bold"
+                fill="#333"
+              >
+                Solar Generation Growth in Selected African Nations
+              </text>
+            )}
+
+            {/* Y Axis Label */}
+            <text
+              transform={`rotate(-90)`}
+              x={-innerHeight / 2}
+              y={-50}
+              textAnchor="middle"
+              fontSize={14}
+              fill="#333"
+            >
+              Solar Electricity (TWh)
+            </text>
+          </g>
+
+          {/* Responsive Legend at Bottom */}
+          <g
+            transform={`translate(${margin.left}, ${
+              innerHeight + margin.top + 40
+            })`}
+          >
+            {legendLayout.map(({ country, x, y }) => (
+              <g
+                key={country}
+                transform={`translate(${x}, ${y})`}
+                onMouseEnter={() => setActiveCountry(country)}
+                onMouseLeave={() => setActiveCountry(null)}
+                onClick={() => toggleCountryVisibility(country)}
+                style={{ cursor: "pointer" }}
+              >
+                <rect
+                  width={15}
+                  height={15}
+                  fill={color(country)}
+                  opacity={1}
+                  stroke={activeCountry === country ? "#999" : "none"}
+                  strokeWidth={2}
+                  style={{ transition: "opacity 0.3s, stroke 0.3s" }}
+                />
+                <text
+                  x={20}
+                  y={12}
+                  fontSize={screenSize === "small" ? 11 : 13}
+                  fill="#333"
+                  opacity={visibleCountries[country] ? 1 : 0.5}
+                  style={{ transition: "opacity 0.3s" }}
+                >
+                  {screenSize === "small" && country === "South Africa"
+                    ? "S. Africa"
+                    : country}
+                </text>
+              </g>
+            ))}
+          </g>
+
+          {/* tooltip */}
+          {tooltip && (
+            <foreignObject
+              x={
+                screenSize === "small"
+                  ? "calc(50% - 128px)"
+                  : tooltip.x + 700 > window.innerWidth
+                  ? `${tooltip.x - 60}px`
+                  : `${tooltip.x + margin.left + 10}px`
+              }
+              // x={tooltip.x + margin.left + 10}
+
+              y={tooltip.y + margin.top - 30}
+              width={120}
+              height={150}
+            >
+              <div
+                xmlns="http://www.w3.org/1999/xhtml"
+                style={{
+                  background: "white",
+                  border: "1px solid #ccc",
+                  borderRadius: "4px",
+                  padding: "5px 8px",
+                  fontSize: 12,
+                  pointerEvents: "none",
+                }}
+              >
+                <div>
+                  <strong>{tooltip.country}</strong>
+                </div>
+                <div>Year: {tooltip.year}</div>
+                <div>Solar: {tooltip.solar_electricity} TWh</div>
+              </div>
+            </foreignObject>
+          )}
+        </svg>
+      </div>
+    </div>
   );
 };
 
