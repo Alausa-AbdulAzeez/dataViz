@@ -28,8 +28,18 @@ export default function AfricaSolarSurge() {
     textColor: "#333333",
     backgroundColor: "#FFFFFF",
   };
-  const [activeTab, setActiveTab] = useState("overview");
-  // Overview tab
+
+  // Get initial tab from URL or default to 'overview'
+  const getInitialTab = () => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tabFromUrl = params.get("tab");
+      const validTabs = ["overview", "adoption", "impact", "country", "future"];
+      return validTabs.includes(tabFromUrl) ? tabFromUrl : "overview";
+    }
+    return "overview";
+  };
+  const [activeTab, setActiveTab] = useState(getInitialTab); // Overview tab
   const chartContainerRef = useRef(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -256,6 +266,57 @@ export default function AfricaSolarSurge() {
     }
   };
 
+  // Enhanced tab change handler
+  const handleTabChange = (newTab) => {
+    // Update state
+    setActiveTab(newTab);
+
+    // Update URL without page reload
+    const url = new URL(window.location);
+    url.searchParams.set("tab", newTab);
+    window.history.pushState({ tab: newTab }, "", url);
+
+    // Scroll to top smoothly
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  // Listen for browser back/forward navigation
+  useEffect(() => {
+    const handlePopState = (event) => {
+      const params = new URLSearchParams(window.location.search);
+      const tabFromUrl = params.get("tab");
+      const validTabs = ["overview", "adoption", "impact", "country", "future"];
+
+      if (validTabs.includes(tabFromUrl)) {
+        setActiveTab(tabFromUrl);
+        // Scroll to top when navigating via browser buttons
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    // Set initial URL if not already set
+    if (
+      typeof window !== "undefined" &&
+      !window.location.search.includes("tab=")
+    ) {
+      const url = new URL(window.location);
+      url.searchParams.set("tab", activeTab);
+      window.history.replaceState({ tab: activeTab }, "", url);
+    }
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [activeTab]);
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -277,7 +338,7 @@ export default function AfricaSolarSurge() {
           <ul className="flex overflow-x-auto">
             <li>
               <button
-                onClick={() => setActiveTab("overview")}
+                onClick={() => handleTabChange("overview")}
                 className={`flex items-center py-4 px-3 font-medium text-sm ${
                   activeTab === "overview"
                     ? "border-b-2 border-orange-500 text-orange-500"
@@ -290,7 +351,7 @@ export default function AfricaSolarSurge() {
             </li>
             <li>
               <button
-                onClick={() => setActiveTab("adoption")}
+                onClick={() => handleTabChange("adoption")}
                 className={`flex items-center py-4 px-3 font-medium text-sm ${
                   activeTab === "adoption"
                     ? "border-b-2 border-orange-500 text-orange-500"
@@ -303,7 +364,7 @@ export default function AfricaSolarSurge() {
             </li>
             <li>
               <button
-                onClick={() => setActiveTab("impact")}
+                onClick={() => handleTabChange("impact")}
                 className={`flex items-center py-4 px-3 font-medium text-sm ${
                   activeTab === "impact"
                     ? "border-b-2 border-orange-500 text-orange-500"
@@ -316,7 +377,7 @@ export default function AfricaSolarSurge() {
             </li>
             <li>
               <button
-                onClick={() => setActiveTab("country")}
+                onClick={() => handleTabChange("country")}
                 className={`flex items-center py-4 px-3 font-medium text-sm ${
                   activeTab === "country"
                     ? "border-b-2 border-orange-500 text-orange-500"
@@ -329,7 +390,7 @@ export default function AfricaSolarSurge() {
             </li>
             <li>
               <button
-                onClick={() => setActiveTab("future")}
+                onClick={() => handleTabChange("future")}
                 className={`flex items-center py-4 px-3 font-medium text-sm ${
                   activeTab === "future"
                     ? "border-b-2 border-orange-500 text-orange-500"
@@ -363,12 +424,13 @@ export default function AfricaSolarSurge() {
             </p>
 
             <div className="grid md:grid-cols-3 gap-6 mb-8">
-              <div className="bg-white p-6 rounded-lg shadow-md">
+              {/* Stat 1 */}
+              <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition">
                 <h3 className="text-lg font-semibold mb-2 flex items-center">
-                  <Sun className="mr-2 h-5 w-5 text-yellow-500" />
+                  <Sun className="mr-2 h-6 w-6 text-orange-400 animate-pulse" />
                   Solar Electricity Generation
                 </h3>
-                <p className="text-4xl font-bold text-orange-500 mb-2">
+                <p className="text-4xl font-extrabold bg-gradient-to-r from-orange-500 to-yellow-400 text-transparent bg-clip-text mb-2">
                   +271,300%
                 </p>
                 <p className="text-gray-600">
@@ -376,27 +438,31 @@ export default function AfricaSolarSurge() {
                 </p>
               </div>
 
-              <div className="bg-white p-6 rounded-lg shadow-md">
+              {/* Stat 2 */}
+              <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition">
                 <h3 className="text-lg font-semibold mb-2 flex items-center">
-                  <Zap className="mr-2 h-5 w-5 text-yellow-500" />
+                  <Zap className="mr-2 h-6 w-6 text-orange-400 animate-pulse" />
                   Energy Mix Growth
                 </h3>
-                <p className="text-4xl font-bold text-orange-500 mb-2">
+                <p className="text-4xl font-extrabold bg-gradient-to-r from-orange-500 to-yellow-400 text-transparent bg-clip-text mb-2">
                   +154,400%
                 </p>
                 <p className="text-gray-600">
-                  Increase in solar's share of total electricity (2000 - 2023)
+                  Increase in solar’s share of total electricity (2000–2023)
                 </p>
               </div>
 
-              <div className="bg-white p-6 rounded-lg shadow-md">
+              {/* Stat 3 */}
+              <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition">
                 <h3 className="text-lg font-semibold mb-2 flex items-center">
-                  <Globe className="mr-2 h-5 w-5 text-yellow-500" />
+                  <Globe className="mr-2 h-6 w-6 text-orange-400 animate-pulse" />
                   Current Share
                 </h3>
-                <p className="text-4xl font-bold text-orange-500 mb-2">3.09%</p>
+                <p className="text-4xl font-extrabold bg-gradient-to-r from-orange-500 to-yellow-400 text-transparent bg-clip-text mb-2">
+                  3.09%
+                </p>
                 <p className="text-gray-600">
-                  Solar's share in Africa's total electricity mix in 2023
+                  Solar’s contribution to Africa’s electricity mix in 2023
                 </p>
               </div>
             </div>
