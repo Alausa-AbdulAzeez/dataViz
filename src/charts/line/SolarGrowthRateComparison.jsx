@@ -1066,6 +1066,7 @@ const SolarElectricityChart = ({
 
               {activeDownloadTab === "Data" && (
                 <div className="mt-4 flex flex-col w-full items-center gap-1.5">
+                  {/* Data source */}
                   <div className="flex justify-start w-full mb-4 py-2 border-b border-gray-200">
                     <div className="text-xs text-gray-600">
                       <div className="font-semibold">

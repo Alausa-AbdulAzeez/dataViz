@@ -77,7 +77,7 @@ export default function AfricaSolarChoropleth({
       const svgBlob = new Blob([svgData], {
         type: "image/svg+xml;charset=utf-8",
       });
-      saveAs(svgBlob, `population-chart-${new Date().getTime()}.svg`);
+      saveAs(svgBlob, `chart-${new Date().getTime()}.svg`);
     } else if (type === "CSV") {
       const { currentYear, data } = ref;
       let csvContent = "Country,Date,solar_elec_per_capita\n";
@@ -563,26 +563,36 @@ export default function AfricaSolarChoropleth({
 
   return (
     <div className="relative w-full h-full pb-2 ">
-      {/* Hidden chart container */}
-      <div className="fixed top-[-2000%] w-full h-full" ref={chartRef}>
+      {/* Hidden chart */}
+      <div
+        className="bg-black fixed -top-[2000%] w-full h-full left-0"
+        ref={chartRef}
+      >
         <svg
+          ref={svgRef}
+          viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
           className={`bg-white ${
             isFullscreen ? "fixed inset-0 z-50 max-w-none rounded-none" : ""
-          } w-full h-full min-h-[500px]`}
+          } w-full md:h-full h-[400px] md:min-h-[500px]`}
         >
           <g transform={`translate(${margin.left}, -100)`}>
-            {/* Title */}(
-            <text
-              x={width / 2 - margin.left - margin.right}
-              y={140}
-              textAnchor="middle"
-              fontSize={getFontSize(20)}
-              fontWeight={500}
-            >
-              Solar Electricity Generation per Capita (kWh) Across African
-              Nations
-            </text>
-            ){/* Map */}
+            {/* Title */}
+            {isFullscreen && (
+              <text
+                x={width / 2 - margin.left - margin.right}
+                y={
+                  currentWidth < 600 ? "-30%" : currentWidth < 900 ? "-10%" : 80
+                }
+                textAnchor="middle"
+                fontSize={getFontSize(20)}
+                fontWeight={500}
+              >
+                Solar Electricity Generation per Capita (kWh) Across African
+                Nations
+              </text>
+            )}
+
+            {/* Map */}
             {africaGeoData && pathGenerator && solarData && (
               <g>
                 {africaGeoData.features.map((feature, i) => (
@@ -602,12 +612,13 @@ export default function AfricaSolarChoropleth({
                 ))}
               </g>
             )}
+
             {/* Legend */}
             <g
               className="legend"
               transform={`translate(${
                 (width - margin.right - legendWidth) / 2
-              }, ${legendY + 80})`}
+              }, ${getLegendYPosition(currentWidth)})`}
             >
               {/* Legend title */}
               <text
@@ -650,7 +661,7 @@ export default function AfricaSolarChoropleth({
                     y={25}
                     textAnchor="middle"
                     fill="#000"
-                    fontSize={getFontSize(18)}
+                    fontSize={getFontSize(20)}
                     fontWeight="500"
                     style={{ cursor: "pointer" }}
                   >
@@ -733,6 +744,27 @@ export default function AfricaSolarChoropleth({
 
               {activeDownloadTab === "Data" && (
                 <div className="mt-4 flex flex-col w-full items-center gap-1.5">
+                  {/* Data source */}
+                  <div className="flex justify-start w-full mb-4 py-2 border-b border-gray-200">
+                    <div className="text-xs text-gray-600">
+                      <div className="font-semibold">
+                        Data source:{" "}
+                        <span className="font-normal">
+                          Our World in Data - Energy Dataset
+                        </span>
+                      </div>
+                      <div className="mt-1 flex items-center gap-1">
+                        <a
+                          href="https://github.com/owid/energy-data"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 underline"
+                        >
+                          Learn more about this data
+                        </a>
+                      </div>
+                    </div>
+                  </div>
                   <div
                     onClick={handleFullCSVDownload}
                     className="w-full h-[100px] rounded-sm hover:bg-slate-200 items-center justify-center flex flex-col bg-slate-100 cursor-pointer"

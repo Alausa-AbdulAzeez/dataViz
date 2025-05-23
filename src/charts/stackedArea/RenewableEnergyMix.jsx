@@ -297,7 +297,7 @@ const RenewableEnergyMix = ({
       const csvBlob = new Blob([csvContent], {
         type: "text/csv;charset=utf-8",
       });
-      saveAs(csvBlob, `population-data-full-${new Date().getTime()}.csv`);
+      saveAs(csvBlob, `data-full-${new Date().getTime()}.csv`);
     }
   };
 
@@ -722,6 +722,27 @@ const RenewableEnergyMix = ({
 
               {activeDownloadTab === "Data" && (
                 <div className="mt-4 flex flex-col w-full items-center gap-1.5">
+                  {/* Data source */}
+                  <div className="flex justify-start w-full mb-4 py-2 border-b border-gray-200">
+                    <div className="text-xs text-gray-600">
+                      <div className="font-semibold">
+                        Data source:{" "}
+                        <span className="font-normal">
+                          Our World in Data - Energy Dataset
+                        </span>
+                      </div>
+                      <div className="mt-1 flex items-center gap-1">
+                        <a
+                          href="https://github.com/owid/energy-data"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 underline"
+                        >
+                          Learn more about this data
+                        </a>
+                      </div>
+                    </div>
+                  </div>
                   <div
                     onClick={handleFullCSVDownload}
                     className="w-full h-[100px] rounded-sm hover:bg-slate-200 items-center justify-center flex flex-col bg-slate-100 cursor-pointer"

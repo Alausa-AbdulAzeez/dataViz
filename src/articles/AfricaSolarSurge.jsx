@@ -236,7 +236,7 @@ export default function AfricaSolarSurge() {
       const svgBlob = new Blob([svgData], {
         type: "image/svg+xml;charset=utf-8",
       });
-      saveAs(svgBlob, `population-chart-${new Date().getTime()}.svg`);
+      saveAs(svgBlob, `chart-${new Date().getTime()}.svg`);
     } else if (type === "CSV") {
       const { currentYear, data } = ref;
       let csvContent = "Country,Date,solar_electricity\n";
@@ -728,7 +728,7 @@ export default function AfricaSolarSurge() {
                   </div>
                 ) : (
                   <div className="text-center  h-full">
-                    {/* Choropleth map */}
+                    {/* Adoption section Choropleth map */}
                     <AfricaSolarChoropleth
                       isFullscreen={isFullscreen}
                       svgRef={svgRef}
@@ -742,6 +742,27 @@ export default function AfricaSolarSurge() {
                     />
                   </div>
                 )}
+              </div>
+              {/* Data source attribution */}
+              <div className="mt-4 pt-2 border-t border-gray-200">
+                <div className="text-xs text-gray-600">
+                  <div className="font-semibold">
+                    Data source:{" "}
+                    <span className="font-normal">
+                      Our World in Data - Energy Dataset
+                    </span>
+                  </div>
+                  <div className="mt-1 flex items-center gap-1">
+                    <a
+                      href="https://github.com/owid/energy-data"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 underline"
+                    >
+                      Learn more about this data
+                    </a>
+                  </div>
+                </div>
               </div>
               <p className="mt-4 text-gray-700">
                 Countries like <b>Namibia</b>, <b>South Africa</b>, and{" "}
@@ -867,7 +888,27 @@ export default function AfricaSolarSurge() {
                   />
                 )}
               </div>
-
+              {/* Data source attribution */}
+              <div className="mt-4 pt-2 border-t border-gray-200">
+                <div className="text-xs text-gray-600">
+                  <div className="font-semibold">
+                    Data source:{" "}
+                    <span className="font-normal">
+                      Our World in Data - Energy Dataset
+                    </span>
+                  </div>
+                  <div className="mt-1 flex items-center gap-1">
+                    <a
+                      href="https://github.com/owid/energy-data"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 underline"
+                    >
+                      Learn more about this data
+                    </a>
+                  </div>
+                </div>
+              </div>
               <p className="text-xs md:text-base mt-4 text-gray-700">
                 In <b>2000</b>, solar power contributed virtually <b>nothing</b>{" "}
                 to Africa’s electricity generation. By <b>2023</b>, it had grown
@@ -975,7 +1016,27 @@ export default function AfricaSolarSurge() {
                   />
                 )}
               </div>
-
+              {/* Data source attribution */}
+              <div className="mt-4 pt-2 border-t border-gray-200">
+                <div className="text-xs text-gray-600">
+                  <div className="font-semibold">
+                    Data source:{" "}
+                    <span className="font-normal">
+                      Our World in Data - Energy Dataset
+                    </span>
+                  </div>
+                  <div className="mt-1 flex items-center gap-1">
+                    <a
+                      href="https://github.com/owid/energy-data"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 underline"
+                    >
+                      Learn more about this data
+                    </a>
+                  </div>
+                </div>
+              </div>
               <p className="text-xs md:text-base mt-4 text-gray-700">
                 Within this selected group of energy sources, solar power's role
                 has grown significantly —{" "}
