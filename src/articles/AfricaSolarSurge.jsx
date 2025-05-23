@@ -18,6 +18,7 @@ import {
 import { csv } from "d3";
 import { Icon } from "@iconify/react";
 import html2canvas from "html2canvas";
+import { StatCard } from "../components";
 
 export default function AfricaSolarSurge() {
   const THEME = {
@@ -423,9 +424,45 @@ export default function AfricaSolarSurge() {
               rates for any energy source on the continent.
             </p>
 
-            <div className="grid md:grid-cols-3 gap-6 mb-8">
+            <div className="grid md:grid-cols-3 gap-6 mb-8 py-4">
+              {/* Test stat 1 */}
+              <StatCard
+                icon={Sun}
+                title="Solar Electricity Generation"
+                value="271,300"
+                suffix="%"
+                description="Explosive growth in solar electricity generation since 2000."
+                gradient="rgba(251, 191, 36, 0.8), rgba(245, 101, 101, 0.8), rgba(139, 69, 19, 0.6)"
+                iconColor="text-yellow-300"
+                delay={200}
+              />
+
+              {/* Test Stat  2*/}
+              <StatCard
+                icon={Zap}
+                title="Energy Mix Revolution"
+                value="154,400"
+                suffix="%"
+                description="Unprecedented increase in solar's share of total electricity from 2000 to 2023"
+                gradient="rgba(59, 130, 246, 0.8), rgba(147, 51, 234, 0.8), rgba(219, 39, 119, 0.6)"
+                iconColor="text-blue-300"
+                delay={400}
+              />
+
+              {/* Test stat 3 */}
+              <StatCard
+                icon={Globe}
+                title="Current Milestone"
+                value="3.09"
+                suffix="%"
+                description="Solar's current share in Africa's total electricity mix as of 2023 - and rapidly climbing"
+                gradient="rgba(34, 197, 94, 0.8), rgba(16, 185, 129, 0.8), rgba(6, 182, 212, 0.6)"
+                iconColor="text-green-300"
+                delay={600}
+              />
+
               {/* Stat 1 */}
-              <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition">
+              {/* <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition">
                 <h3 className="text-lg font-semibold mb-2 flex items-center">
                   <Sun className="mr-2 h-6 w-6 text-orange-400 animate-pulse" />
                   Solar Electricity Generation
@@ -436,10 +473,10 @@ export default function AfricaSolarSurge() {
                 <p className="text-gray-600">
                   Growth in solar electricity generation since 2000
                 </p>
-              </div>
+              </div> */}
 
               {/* Stat 2 */}
-              <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition">
+              {/* <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition">
                 <h3 className="text-lg font-semibold mb-2 flex items-center">
                   <Zap className="mr-2 h-6 w-6 text-orange-400 animate-pulse" />
                   Energy Mix Growth
@@ -450,10 +487,10 @@ export default function AfricaSolarSurge() {
                 <p className="text-gray-600">
                   Increase in solar’s share of total electricity (2000–2023)
                 </p>
-              </div>
+              </div> */}
 
               {/* Stat 3 */}
-              <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition">
+              {/* <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition">
                 <h3 className="text-lg font-semibold mb-2 flex items-center">
                   <Globe className="mr-2 h-6 w-6 text-orange-400 animate-pulse" />
                   Current Share
@@ -464,7 +501,7 @@ export default function AfricaSolarSurge() {
                 <p className="text-gray-600">
                   Solar’s contribution to Africa’s electricity mix in 2023
                 </p>
-              </div>
+              </div> */}
             </div>
 
             <div className="bg-white p-6 rounded-lg shadow-md mb-8">
@@ -548,7 +585,7 @@ export default function AfricaSolarSurge() {
                     <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-yellow-500"></div>
                   </div>
                 ) : (
-                  // Line chart
+                  // Overview tab - Line chart
                   <SolarShare
                     data={data}
                     THEME={THEME}
@@ -564,7 +601,27 @@ export default function AfricaSolarSurge() {
                   />
                 )}
               </div>
-
+              {/* Data source attribution */}
+              <div className="mt-4 pt-2 border-t border-gray-200">
+                <div className="text-xs text-gray-600">
+                  <div className="font-semibold">
+                    Data source:{" "}
+                    <span className="font-normal">
+                      Our World in Data - Energy Dataset
+                    </span>
+                  </div>
+                  <div className="mt-1 flex items-center gap-1">
+                    <a
+                      href="https://github.com/owid/energy-data"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 underline"
+                    >
+                      Learn more about this data
+                    </a>
+                  </div>
+                </div>
+              </div>
               <p className="text-xs md:text-base mt-4 text-gray-700">
                 This chart illustrates Africa's remarkable solar energy journey,
                 with electricity generation growing from just <b>0.01 TWh</b> in
