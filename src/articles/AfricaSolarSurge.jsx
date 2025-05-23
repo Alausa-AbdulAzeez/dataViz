@@ -513,7 +513,7 @@ export default function AfricaSolarSurge() {
                 <div className="w-fit h-8 flex justify-center gap-2 ">
                   {/* Fullscreen toggle button */}
                   <div
-                    onClick={toggleFullscreen}
+                    onClick={() => toggleFullscreen(chartContainerRef)}
                     onMouseEnter={() => {
                       setIconTooltip({
                         visible: true,

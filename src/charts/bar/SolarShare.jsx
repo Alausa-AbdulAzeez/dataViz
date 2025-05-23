@@ -85,7 +85,7 @@ const SolarShare = ({
       const svgBlob = new Blob([svgData], {
         type: "image/svg+xml;charset=utf-8",
       });
-      saveAs(svgBlob, `population-chart-${new Date().getTime()}.svg`);
+      saveAs(svgBlob, `chart-${new Date().getTime()}.svg`);
     } else if (type === "CSV") {
       const { currentYear, data } = ref;
       let csvContent = "Country,Date,solar_electricity\n";
@@ -112,7 +112,7 @@ const SolarShare = ({
       const csvBlob = new Blob([csvContent], {
         type: "text/csv;charset=utf-8",
       });
-      saveAs(csvBlob, `population-data-full-${new Date().getTime()}.csv`);
+      saveAs(csvBlob, `data-full-${new Date().getTime()}.csv`);
     }
   };
   // X-axis scale
