@@ -8,10 +8,10 @@ const App = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />}></Route>
-        <Route path="worldPopulation" element={<WorldPopulation />}></Route>
-        <Route path="worldPopulationNew" element={<AppTest />}></Route>
-        <Route path="solarSurgeAfrica" element={<AfricasSolarSurge />}></Route>
+        <Route path="*" element={<AfricaSolarSurge />}></Route>
+        {/* <Route path="worldPopulation" element={<WorldPopulation />}></Route> */}
+        {/* <Route path="worldPopulationNew" element={<AppTest />}></Route> */}
+        {/* <Route path="solarSurgeAfrica" element={<AfricasSolarSurge />}></Route> */}
         <Route
           path="articles/solarSurgeAfrica"
           element={<AfricaSolarSurge />}
