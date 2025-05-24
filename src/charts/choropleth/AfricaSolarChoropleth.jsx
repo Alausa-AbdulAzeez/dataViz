@@ -565,7 +565,7 @@ export default function AfricaSolarChoropleth({
     <div className="relative w-full h-full pb-2 ">
       {/* Hidden chart */}
       <div
-        className="bg-black fixed -top-[2000%] w-full h-full left-0"
+        className="bg-white fixed -top-[2000%] w-full h-full left-0"
         ref={chartRef}
       >
         <svg

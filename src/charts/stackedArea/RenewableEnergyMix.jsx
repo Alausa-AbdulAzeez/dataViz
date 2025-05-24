@@ -287,10 +287,11 @@ const RenewableEnergyMix = ({
       const { data } = ref;
       const years = Object.keys(data[0]).filter((key) => !isNaN(parseInt(key)));
 
-      let csvContent = "country,year,solar_share_elec" + "\n";
-
+      let csvContent =
+        "country,year,solar_electricity,hydro_electricity,wind_electricity,biofuel_electricity,other_renewable_electricity,oil_electricity" +
+        "\n";
       data.forEach((item) => {
-        csvContent += `${item.country},${item.year},${item.solar_share_elec}`;
+        csvContent += `${item.country},${item.year},${item.solar_electricity},${item.hydro_electricity},${item.wind_electricity},${item.biofuel_electricity},${item.other_renewable_electricity},${item.oil_electricity}`;
         csvContent += "\n";
       });
 
@@ -402,203 +403,132 @@ const RenewableEnergyMix = ({
   return (
     <div className="w-full h-full font-sans relative">
       {/* Hidden chart container */}
-      <div ref={chartRef} className="fixed -top-[2000%]">
+      <div
+        ref={chartRef}
+        className="bg-white mx-auto flex flex-col items-center justify-center h-full w-full fixed -top-[2000%]"
+      >
         {/* The chart */}
         <svg
-          width={width + margins.left + margins.right}
-          height={height + margins.top + margins.bottom}
+          width={screenSize === "small" ? width - 8 : width}
+          height={height}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
         >
-          <defs>
-            {/* Gradient for area fill */}
-            <linearGradient id="solarGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop
-                offset="0%"
-                stopColor={THEME.primaryColorLight}
-                stopOpacity="0.6"
-              />
-              <stop
-                offset="100%"
-                stopColor={THEME.primaryColorLight}
-                stopOpacity="0.1"
-              />
-            </linearGradient>
-
-            {/* Filter for drop shadow */}
-            <filter id="dropShadow" height="130%">
-              <feGaussianBlur in="SourceAlpha" stdDeviation="3" />
-              <feOffset dx="0" dy="2" result="offsetblur" />
-              <feComponentTransfer>
-                <feFuncA type="linear" slope="0.2" />
-              </feComponentTransfer>
-              <feMerge>
-                <feMergeNode />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
-
-          {/* Chart title and subtitle */}
-          <text
-            x={margins.left}
-            y={20}
-            fontSize={16}
-            fontWeight="bold"
-            fill={THEME.textColor}
+          <g
+            transform={`translate(${
+              screenSize === "small" ? margins.left + 10 : margins.left
+            },${margins.top - 15})`}
           >
-            Africa's Growing Solar Share of Electricity (2000-2023)
-          </text>
-
-          <g transform={`translate(${margins.left}, ${margins.top + 5})`}>
-            {/* Area under the line */}
-            <path d={areaPath} fill="url(#solarGradient)" />
-
-            {/* X and Y axis lines */}
-            <line
-              x1={0}
-              y1={innerHeight}
-              x2={innerWidth}
-              y2={innerHeight}
-              stroke={THEME.borderColor}
-              strokeWidth={1}
-            />
-            <line
-              x1={0}
-              y1={0}
-              x2={0}
-              y2={innerHeight}
-              stroke={THEME.borderColor}
-              strokeWidth={1}
-            />
-
-            {/* Vertical grids */}
-            {xScale.ticks(6).map((datum) => (
-              <g key={`x-${datum}`}>
-                <line
-                  stroke={THEME.borderColor}
-                  strokeDasharray="4,4"
-                  strokeOpacity={0.5}
-                  y2={innerHeight}
-                  x1={xScale(datum)}
-                  x2={xScale(datum)}
-                />
-                <text
-                  y={innerHeight + 16}
-                  x={xScale(datum)}
-                  textAnchor="middle"
-                  fontSize={12}
-                  fill={THEME.textColor}
-                >
-                  {datum}
-                </text>
-              </g>
-            ))}
-
-            {/* Horizontal grids */}
-            {yScale.ticks(5).map((datum) => (
-              <g key={`y-${datum}`}>
-                <text
-                  fill={THEME.textColor}
-                  x={-10}
-                  y={yScale(datum)}
-                  fontSize={12}
-                  dy={"0.36em"}
-                  textAnchor="end"
-                >
-                  {formatYValue(datum)}
-                </text>
-                <line
-                  stroke={THEME.borderColor}
-                  strokeDasharray="4,4"
-                  strokeOpacity={0.5}
-                  x2={innerWidth}
-                  y1={yScale(datum)}
-                  y2={yScale(datum)}
-                />
-              </g>
-            ))}
-
-            {/* Line path */}
-            <path
-              d={lineGenerator(data)}
-              fill="none"
-              stroke={THEME.primaryColor}
-              strokeWidth={3}
-              filter="url(#dropShadow)"
-            />
-
-            {/* Data points */}
-            {data.map((datum) => (
-              <g key={datum.year}>
-                <circle
-                  cx={xScale(datum.year)}
-                  cy={yScale(datum.solar_share_elec)}
-                  r={selectedPoint === datum ? 6 : 4}
-                  fill={
-                    selectedPoint === datum
-                      ? THEME.accentColor
-                      : THEME.primaryColor
-                  }
-                  stroke={THEME.backgroundColor}
-                  strokeWidth={2}
-                  onMouseEnter={() => handlePointHover(datum)}
-                  onMouseLeave={handlePointLeave}
-                  style={{ cursor: "pointer", transition: "r 0.2s" }}
-                />
-              </g>
-            ))}
-
-            {/* Tooltip for selected point */}
-            {selectedPoint && (
-              <g>
-                <rect
-                  x={xScale(selectedPoint.year) - 50}
-                  y={yScale(selectedPoint.solar_share_elec) - 40}
-                  width={100}
-                  height={30}
-                  rx={4}
-                  fill={THEME.backgroundColor}
-                  stroke={THEME.borderColor}
-                  filter="url(#dropShadow)"
-                />
-                <text
-                  x={xScale(selectedPoint.year)}
-                  y={yScale(selectedPoint.solar_share_elec) - 20}
-                  textAnchor="middle"
-                  fontSize={12}
-                  fontWeight="bold"
-                  fill={THEME.textColor}
-                >
-                  {selectedPoint.year}: {selectedPoint.solar_share_elec}%
-                </text>
-              </g>
-            )}
-
-            {/* X axis label */}
+            {/* Chart title */}
             <text
-              x={innerWidth / 2}
-              y={innerHeight + 40}
+              x={width / 2 - margins.left}
+              y={15}
               textAnchor="middle"
-              fontSize={14}
-              fill={THEME.textColor}
+              fontSize={screenSize === "small" ? 12 : 16}
+              fontWeight="bold"
             >
-              Year
+              Renewable Energy Mix in Africa (2000 - 2023)
             </text>
 
-            {/* Y axis label */}
-            <text
-              transform={`rotate(-90, -40, ${innerHeight / 2})`}
-              x={-40}
-              y={innerHeight / 2}
-              textAnchor="middle"
-              fontSize={14}
-              fill={THEME.textColor}
-            >
-              Solar Generation Growth (%)
-            </text>
+            {/* X Axis */}
+            <g transform={`translate(0,${height})`}>
+              {xTicks.map((tick) => (
+                <g
+                  key={`x-tick-${tick}`}
+                  transform={`translate(${xScale(tick)},0)`}
+                >
+                  <line y2="6" stroke="currentColor" />
+                  <text
+                    key={tick}
+                    style={{ fontSize: "12px", textAnchor: "middle" }}
+                    y={20}
+                  >
+                    {tick}
+                  </text>
+                </g>
+              ))}
+              {/* X Axis Label */}
+              {/* <text x={width / 2} y={40} textAnchor="middle" fontSize="14px">
+                Year
+              </text> */}
+            </g>
+
+            {/* Y Axis */}
+            <g>
+              {yTicks.map((tick) => (
+                <g
+                  key={`y-tick-${tick}`}
+                  transform={`translate(0,${yScale(tick)})`}
+                >
+                  <line x2="-6" stroke="currentColor" />
+                  <text
+                    key={tick}
+                    style={{ fontSize: "12px", textAnchor: "end" }}
+                    x="-10"
+                    y="4"
+                  >
+                    {tick}
+                  </text>
+                  <line
+                    x1="0"
+                    x2={width}
+                    stroke="#e0e0e0"
+                    strokeDasharray="3,3"
+                    opacity="0.5"
+                  />
+                </g>
+              ))}
+              {/* Y Axis Label */}
+              <text
+                transform={`rotate(-90) translate(${-height / 2}, ${-40})`}
+                textAnchor="middle"
+                fontSize="14px"
+              >
+                {viewType === "absolute"
+                  ? "Energy Production (TWh)"
+                  : "Percentage (%)"}
+              </text>
+            </g>
+
+            {/* Stacked Areas */}
+            {stackedData.map((layer, i) => (
+              <path
+                key={`area-${activeKeys[i]}`}
+                d={areaGenerator(layer)}
+                fill={colors[activeKeys[i]]}
+                opacity="0.8"
+                style={{ transition: "opacity 0.2s" }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.opacity = "1";
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.opacity = "0.8";
+                }}
+              />
+            ))}
+
+            {/* Invisible overlay for tooltip */}
+            <rect
+              width={width}
+              height={height}
+              fill="transparent"
+              pointerEvents="all"
+            />
           </g>
         </svg>
+
+        {/* Legend - MOVED outside of SVG for better placement and responsiveness */}
+        <div className="flex flex-wrap justify-center mt-2 gap-4 px-4">
+          {activeKeys.map((key) => (
+            <div key={`legend-${key}`} className="flex items-center gap-2">
+              <div
+                className="w-4 h-4"
+                style={{ backgroundColor: colors[key] }}
+              ></div>
+              <span className="text-sm">{formatSourceName(key)}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Main chart container */}
@@ -706,7 +636,7 @@ const RenewableEnergyMix = ({
                     <div className="font-medium text-lg">Image (PNG)</div>
                     <div className="text-sm">Suitable for most use cases</div>
                   </div>
-                  <div
+                  {/* <div
                     onClick={handleSVGDownload}
                     className="w-full rounded-sm hover:bg-slate-200 items-center h-[100px] justify-center flex flex-col bg-slate-100 cursor-pointer"
                   >
@@ -716,7 +646,7 @@ const RenewableEnergyMix = ({
                     <div className="text-sm">
                       Scalable format, ideal for editing
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               )}
 

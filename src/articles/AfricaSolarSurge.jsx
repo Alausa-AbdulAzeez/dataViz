@@ -54,6 +54,12 @@ export default function AfricaSolarSurge() {
   const svgRef = useRef(null);
   const [isChoroplethModalOpen, setIsChoroplethModalOpen] = useState(false);
 
+  // Energy Impact trab
+  const impactLineChartContainerRef = useRef(null);
+  const stackedAreaChartContainerRef = useRef(null);
+  const [isImpactLineModalOpen, setIsImpactLineModalOpen] = useState(false);
+  const [isStackedAreaModalOpen, setIsStackedAreaModalOpen] = useState(false);
+
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const [iconTooltip, setIconTooltip] = useState({
@@ -800,7 +806,9 @@ export default function AfricaSolarSurge() {
                 <div className="w-fit h-8 flex justify-center gap-2 ">
                   {/* Fullscreen toggle button */}
                   <div
-                    onClick={toggleFullscreen}
+                    onClick={() =>
+                      toggleFullscreen(impactLineChartContainerRef)
+                    }
                     onMouseEnter={() => {
                       setIconTooltip({
                         visible: true,
@@ -836,7 +844,7 @@ export default function AfricaSolarSurge() {
 
                   {/* Download button */}
                   <div
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => setIsImpactLineModalOpen(true)}
                     onMouseEnter={() => {
                       setIconTooltip({
                         visible: true,
@@ -882,9 +890,9 @@ export default function AfricaSolarSurge() {
                     toggleFullscreen={toggleFullscreen}
                     iconTooltip={iconTooltip}
                     setIconTooltip={setIconTooltip}
-                    chartContainerRef={chartContainerRef}
-                    isModalOpen={isModalOpen}
-                    setIsModalOpen={setIsModalOpen}
+                    chartContainerRef={impactLineChartContainerRef}
+                    isModalOpen={isImpactLineModalOpen}
+                    setIsModalOpen={setIsImpactLineModalOpen}
                   />
                 )}
               </div>
@@ -928,7 +936,9 @@ export default function AfricaSolarSurge() {
                 <div className="w-fit h-8 flex justify-center gap-2 ">
                   {/* Fullscreen toggle button */}
                   <div
-                    onClick={toggleFullscreen}
+                    onClick={() =>
+                      toggleFullscreen(stackedAreaChartContainerRef)
+                    }
                     onMouseEnter={() => {
                       setIconTooltip({
                         visible: true,
@@ -964,7 +974,7 @@ export default function AfricaSolarSurge() {
 
                   {/* Download button */}
                   <div
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => setIsStackedAreaModalOpen(true)}
                     onMouseEnter={() => {
                       setIconTooltip({
                         visible: true,
@@ -1010,9 +1020,9 @@ export default function AfricaSolarSurge() {
                     toggleFullscreen={toggleFullscreen}
                     iconTooltip={iconTooltip}
                     setIconTooltip={setIconTooltip}
-                    chartContainerRef={chartContainerRef}
-                    isModalOpen={isModalOpen}
-                    setIsModalOpen={setIsModalOpen}
+                    chartContainerRef={stackedAreaChartContainerRef}
+                    isModalOpen={isStackedAreaModalOpen}
+                    setIsModalOpen={setIsStackedAreaModalOpen}
                   />
                 )}
               </div>
