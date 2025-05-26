@@ -7,10 +7,12 @@ import AfricaSolarChoropleth from "./choropleth/AfricaSolarChoropleth";
 import RenewableEnergyMix from "./stackedArea/RenewableEnergyMix";
 import SolarSurgeCountryComparison from "./bar/SolarSurgeCountryComparison";
 import SolarGrowthRateComparison from "./line/SolarGrowthRateComparison";
+import AfricaGDPComparison from "./line/AfricaGDPComparison";
 
 export {
   WorldPopulation,
   AfricaSolarChoropleth,
+  AfricaGDPComparison,
   SolarGrowthRateComparison,
   SolarSurgeCountryComparison,
   BarChart,

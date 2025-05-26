@@ -1,6 +1,10 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Home } from "./pages";
-import { AfricasSolarSurge, WorldPopulation } from "./charts";
+import {
+  AfricaGDPComparison,
+  AfricasSolarSurge,
+  WorldPopulation,
+} from "./charts";
 import AppTest from "./charts/bar/AppTest";
 import { AfricaSolarSurge } from "./articles";
 
@@ -15,6 +19,10 @@ const App = () => {
         <Route
           path="articles/solarSurgeAfrica"
           element={<AfricaSolarSurge />}
+        ></Route>
+        <Route
+          path="charts/africaGdpCompare"
+          element={<AfricaGDPComparison />}
         ></Route>
       </Routes>
     </BrowserRouter>

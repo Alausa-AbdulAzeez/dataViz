@@ -628,8 +628,7 @@ export default function AfricaSolarChoropleth({
                 fontSize={getFontSize(20)}
                 fontWeight="semi-bold"
               >
-                Solar Electricity Generation per Capita (kWh) - Hover to Filter,
-                Click to Toggle
+                Solar Electricity Generation per Capita (kWh)
               </text>
 
               {/* Legend bins */}
@@ -842,8 +841,7 @@ export default function AfricaSolarChoropleth({
                 fontSize={getFontSize(20)}
                 fontWeight="semi-bold"
               >
-                Solar Electricity Generation per Capita (kWh) - Hover to Filter,
-                Click to Toggle
+                Solar Electricity Generation per Capita (kWh)
               </text>
 
               {/* Legend bins */}
