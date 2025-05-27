@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Home } from "./pages";
 import {
   AfricaGDPComparison,
+  AfricaPerCapitaGDPComparison,
   AfricasSolarSurge,
   WorldPopulation,
 } from "./charts";
@@ -23,6 +24,10 @@ const App = () => {
         <Route
           path="charts/africaGdpCompare"
           element={<AfricaGDPComparison />}
+        ></Route>
+        <Route
+          path="charts/africaGdperCapitaCompare"
+          element={<AfricaPerCapitaGDPComparison />}
         ></Route>
       </Routes>
     </BrowserRouter>

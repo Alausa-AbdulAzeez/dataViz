@@ -8,10 +8,12 @@ import RenewableEnergyMix from "./stackedArea/RenewableEnergyMix";
 import SolarSurgeCountryComparison from "./bar/SolarSurgeCountryComparison";
 import SolarGrowthRateComparison from "./line/SolarGrowthRateComparison";
 import AfricaGDPComparison from "./line/AfricaGDPComparison";
+import AfricaPerCapitaGDPComparison from "./line/AfricaPerCapitaGDPComparison";
 
 export {
   WorldPopulation,
   AfricaSolarChoropleth,
+  AfricaPerCapitaGDPComparison,
   AfricaGDPComparison,
   SolarGrowthRateComparison,
   SolarSurgeCountryComparison,

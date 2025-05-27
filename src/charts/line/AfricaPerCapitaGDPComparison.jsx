@@ -9,7 +9,7 @@ import * as d3 from "d3";
 import { Icon } from "@iconify/react";
 import html2canvas from "html2canvas";
 
-const AfricaGDPComparison = () => {
+const AfricaPerCapitagdp_per_capitaComparison = () => {
   const chartContainerRef = useRef(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -35,456 +35,455 @@ const AfricaGDPComparison = () => {
     {
       country: "Nigeria",
       year: 2010,
-      gdp: 374.098,
+      gdp_per_capita: 2360.198,
     },
     {
       country: "Nigeria",
       year: 2011,
-      gdp: 419.942,
+      gdp_per_capita: 2579.419,
     },
     {
       country: "Nigeria",
       year: 2012,
-      gdp: 467.157,
+      gdp_per_capita: 2793.514,
     },
     {
       country: "Nigeria",
       year: 2013,
-      gdp: 521.861,
+      gdp_per_capita: 3038.21,
     },
     {
       country: "Nigeria",
       year: 2014,
-      gdp: 576.004,
+      gdp_per_capita: 3265.236,
     },
     {
       country: "Nigeria",
       year: 2015,
-      gdp: 494.307,
+      gdp_per_capita: 2728.913,
     },
     {
       country: "Nigeria",
       year: 2016,
-      gdp: 405.019,
+      gdp_per_capita: 2177.988,
     },
     {
       country: "Nigeria",
       year: 2017,
-      gdp: 375.756,
+      gdp_per_capita: 1968.62,
     },
     {
       country: "Nigeria",
       year: 2018,
-      gdp: 421.739,
+      gdp_per_capita: 2153.105,
     },
     {
       country: "Nigeria",
       year: 2019,
-      gdp: 474.517,
+      gdp_per_capita: 2361.203,
     },
     {
       country: "Nigeria",
       year: 2020,
-      gdp: 432.299,
+      gdp_per_capita: 2097.113,
     },
     {
       country: "Nigeria",
       year: 2021,
-      gdp: 441.074,
+      gdp_per_capita: 2086.431,
     },
     {
       country: "Nigeria",
       year: 2022,
-      gdp: 476.468,
+      gdp_per_capita: 2198.266,
     },
     {
       country: "Nigeria",
       year: 2023,
-      gdp: 363.816,
+      gdp_per_capita: 1637.468,
     },
     {
       country: "Nigeria",
       year: 2024,
-      gdp: 187.64,
+      gdp_per_capita: 824.021,
     },
     {
       country: "Egypt",
       year: 2010,
-      gdp: 230.024,
+      gdp_per_capita: 2922.796,
     },
     {
       country: "Egypt",
       year: 2011,
-      gdp: 247.726,
+      gdp_per_capita: 3077.343,
     },
     {
       country: "Egypt",
       year: 2012,
-      gdp: 294.482,
+      gdp_per_capita: 3569.482,
     },
     {
       country: "Egypt",
       year: 2013,
-      gdp: 303.194,
+      gdp_per_capita: 3583.854,
     },
     {
       country: "Egypt",
       year: 2014,
-      gdp: 321.634,
+      gdp_per_capita: 3705.465,
     },
     {
       country: "Egypt",
       year: 2015,
-      gdp: 350.119,
+      gdp_per_capita: 3933.927,
     },
     {
       country: "Egypt",
       year: 2016,
-      gdp: 351.443,
+      gdp_per_capita: 3862.011,
     },
     {
       country: "Egypt",
       year: 2017,
-      gdp: 246.826,
+      gdp_per_capita: 2592.707,
     },
     {
       country: "Egypt",
       year: 2018,
-      gdp: 263.156,
+      gdp_per_capita: 2710.158,
     },
     {
       country: "Egypt",
       year: 2019,
-      gdp: 317.894,
+      gdp_per_capita: 3214.301,
     },
     {
       country: "Egypt",
       year: 2020,
-      gdp: 382.525,
+      gdp_per_capita: 3802.438,
     },
     {
       country: "Egypt",
       year: 2021,
-      gdp: 423.3,
+      gdp_per_capita: 4145.939,
     },
     {
       country: "Egypt",
       year: 2022,
-      gdp: 475.231,
+      gdp_per_capita: 4587.172,
     },
     {
       country: "Egypt",
       year: 2023,
-      gdp: 393.828,
+      gdp_per_capita: 3743.608,
     },
     {
       country: "Egypt",
       year: 2024,
-      gdp: 383.109,
+      gdp_per_capita: 3570.313,
     },
     {
       country: "Kenya",
       year: 2010,
-      gdp: 45.406,
+      gdp_per_capita: 1176.311,
     },
     {
       country: "Kenya",
       year: 2011,
-      gdp: 46.555,
+      gdp_per_capita: 1178.599,
     },
     {
       country: "Kenya",
       year: 2012,
-      gdp: 56.407,
+      gdp_per_capita: 1396.22,
     },
     {
       country: "Kenya",
       year: 2013,
-      gdp: 61.703,
+      gdp_per_capita: 1490.422,
     },
     {
       country: "Kenya",
       year: 2014,
-      gdp: 68.395,
+      gdp_per_capita: 1613.101,
     },
     {
       country: "Kenya",
       year: 2015,
-      gdp: 70.37,
+      gdp_per_capita: 1625.176,
     },
     {
       country: "Kenya",
       year: 2016,
-      gdp: 74.816,
+      gdp_per_capita: 1688.852,
     },
     {
       country: "Kenya",
       year: 2017,
-      gdp: 81.965,
+      gdp_per_capita: 1805.398,
     },
     {
       country: "Kenya",
       year: 2018,
-      gdp: 92.211,
+      gdp_per_capita: 1987.302,
     },
     {
       country: "Kenya",
       year: 2019,
-      gdp: 100.328,
+      gdp_per_capita: 2107.735,
     },
     {
       country: "Kenya",
       year: 2020,
-      gdp: 100.912,
+      gdp_per_capita: 2067.987,
     },
     {
       country: "Kenya",
       year: 2021,
-      gdp: 109.875,
+      gdp_per_capita: 2208.691,
     },
     {
       country: "Kenya",
       year: 2022,
-      gdp: 114.733,
+      gdp_per_capita: 2265.658,
     },
     {
       country: "Kenya",
       year: 2023,
-      gdp: 108.747,
+      gdp_per_capita: 2110.0,
     },
     {
       country: "Kenya",
       year: 2024,
-      gdp: 120.899,
+      gdp_per_capita: 2305.312,
     },
     {
       country: "Rwanda",
       year: 2010,
-      gdp: 6.124,
+      gdp_per_capita: 612.395,
     },
     {
       country: "Rwanda",
       year: 2011,
-      gdp: 6.885,
+      gdp_per_capita: 674.982,
     },
     {
       country: "Rwanda",
       year: 2012,
-      gdp: 7.654,
+      gdp_per_capita: 730.16,
     },
     {
       country: "Rwanda",
       year: 2013,
-      gdp: 7.821,
+      gdp_per_capita: 728.38,
     },
     {
       country: "Rwanda",
       year: 2014,
-      gdp: 8.24,
+      gdp_per_capita: 749.262,
     },
     {
       country: "Rwanda",
       year: 2015,
-      gdp: 8.546,
+      gdp_per_capita: 758.805,
     },
     {
       country: "Rwanda",
       year: 2016,
-      gdp: 8.695,
+      gdp_per_capita: 753.905,
     },
     {
       country: "Rwanda",
       year: 2017,
-      gdp: 9.253,
+      gdp_per_capita: 783.54,
     },
     {
       country: "Rwanda",
       year: 2018,
-      gdp: 9.638,
+      gdp_per_capita: 797.182,
     },
     {
       country: "Rwanda",
       year: 2019,
-      gdp: 10.349,
+      gdp_per_capita: 836.313,
     },
     {
       country: "Rwanda",
       year: 2020,
-      gdp: 10.174,
+      gdp_per_capita: 803.463,
     },
     {
       country: "Rwanda",
       year: 2021,
-      gdp: 11.066,
+      gdp_per_capita: 854.124,
     },
     {
       country: "Rwanda",
       year: 2022,
-      gdp: 13.313,
+      gdp_per_capita: 1005.041,
     },
     {
       country: "Rwanda",
       year: 2023,
-      gdp: 14.331,
+      gdp_per_capita: 1061.641,
     },
     {
       country: "Rwanda",
       year: 2024,
-      gdp: 14.251,
+      gdp_per_capita: 1028.469,
     },
     {
       country: "South Africa",
       year: 2010,
-      gdp: 417.315,
+      gdp_per_capita: 8118.173,
     },
     {
       country: "South Africa",
       year: 2011,
-      gdp: 458.708,
+      gdp_per_capita: 8784.648,
     },
     {
       country: "South Africa",
       year: 2012,
-      gdp: 434.4,
+      gdp_per_capita: 8185.718,
     },
     {
       country: "South Africa",
       year: 2013,
-      gdp: 400.877,
+      gdp_per_capita: 7431.908,
     },
     {
       country: "South Africa",
       year: 2014,
-      gdp: 381.195,
+      gdp_per_capita: 6952.314,
     },
     {
       country: "South Africa",
       year: 2015,
-      gdp: 346.663,
+      gdp_per_capita: 6222.526,
     },
     {
       country: "South Africa",
       year: 2016,
-      gdp: 323.493,
+      gdp_per_capita: 5721.189,
     },
     {
       country: "South Africa",
       year: 2017,
-      gdp: 381.317,
+      gdp_per_capita: 6647.093,
     },
     {
       country: "South Africa",
       year: 2018,
-      gdp: 405.093,
+      gdp_per_capita: 6956.41,
     },
     {
       country: "South Africa",
       year: 2019,
-      gdp: 389.245,
+      gdp_per_capita: 6582.757,
     },
     {
       country: "South Africa",
       year: 2020,
-      gdp: 337.876,
+      gdp_per_capita: 5630.983,
     },
     {
       country: "South Africa",
       year: 2021,
-      gdp: 420.778,
+      gdp_per_capita: 6938.723,
     },
     {
       country: "South Africa",
       year: 2022,
-      gdp: 406.755,
+      gdp_per_capita: 6629.419,
     },
     {
       country: "South Africa",
       year: 2023,
-      gdp: 380.592,
+      gdp_per_capita: 6111.746,
     },
     {
       country: "South Africa",
       year: 2024,
-      gdp: 400.191,
+      gdp_per_capita: 6331.913,
     },
     {
       country: "Ethiopia",
       year: 2010,
-      gdp: 26.887,
+      gdp_per_capita: 341.103,
     },
     {
       country: "Ethiopia",
       year: 2011,
-      gdp: 30.48,
+      gdp_per_capita: 377.694,
     },
     {
       country: "Ethiopia",
       year: 2012,
-      gdp: 42.221,
+      gdp_per_capita: 510.537,
     },
     {
       country: "Ethiopia",
       year: 2013,
-      gdp: 46.544,
+      gdp_per_capita: 548.869,
     },
     {
       country: "Ethiopia",
       year: 2014,
-      gdp: 54.165,
+      gdp_per_capita: 622.592,
     },
     {
       country: "Ethiopia",
       year: 2015,
-      gdp: 63.081,
+      gdp_per_capita: 707.975,
     },
     {
       country: "Ethiopia",
       year: 2016,
-      gdp: 72.12,
+      gdp_per_capita: 790.789,
     },
     {
       country: "Ethiopia",
       year: 2017,
-      gdp: 76.841,
+      gdp_per_capita: 822.704,
     },
     {
       country: "Ethiopia",
       year: 2018,
-      gdp: 80.207,
+      gdp_per_capita: 839.861,
     },
     {
       country: "Ethiopia",
       year: 2019,
-      gdp: 92.608,
+      gdp_per_capita: 948.851,
     },
     {
       country: "Ethiopia",
       year: 2020,
-      gdp: 96.611,
+      gdp_per_capita: 969.014,
     },
     {
       country: "Ethiopia",
       year: 2021,
-      gdp: 99.261,
+      gdp_per_capita: 974.103,
     },
     {
       country: "Ethiopia",
       year: 2022,
-      gdp: 118.958,
+      gdp_per_capita: 1142.927,
     },
     {
       country: "Ethiopia",
       year: 2023,
-      gdp: 159.761,
+      gdp_per_capita: 1511.357,
     },
     {
       country: "Ethiopia",
       year: 2024,
-      gdp: 143.123,
+      gdp_per_capita: 1320.157,
     },
   ];
 
-  // Fullscreen toggle functionality (for overview tab)
   const toggleFullscreen = useCallback(
     (attributedRef) => {
       if (!attributedRef.current) return;
@@ -563,7 +562,7 @@ const AfricaGDPComparison = () => {
     () =>
       d3
         .scaleLinear()
-        .domain([0, d3.max(data, (d) => d.gdp) * 1.1])
+        .domain([0, d3.max(data, (d) => d.gdp_per_capita) * 1.1])
         .range([innerHeight, 0]),
     [data]
   );
@@ -571,7 +570,7 @@ const AfricaGDPComparison = () => {
   const line = d3
     .line()
     .x((d) => xScale(d.year))
-    .y((d) => yScale(d.gdp))
+    .y((d) => yScale(d.gdp_per_capita))
     .curve(d3.curveMonotoneX);
 
   const grouped = useMemo(() => {
@@ -598,10 +597,10 @@ const AfricaGDPComparison = () => {
       saveAs(svgBlob, `chart-${new Date().getTime()}.svg`);
     } else if (type === "CSV") {
       const { currentYear, data } = ref;
-      let csvContent = "Country,Date,gdp\n";
+      let csvContent = "Country,Date,gdp_per_capita\n";
 
       data.forEach((item) => {
-        csvContent += `${item.country},${item.year},${item.gdp}\n`;
+        csvContent += `${item.country},${item.year},${item.gdp_per_capita}\n`;
       });
 
       const csvBlob = new Blob([csvContent], {
@@ -612,10 +611,10 @@ const AfricaGDPComparison = () => {
       const { data } = ref;
       const years = Object.keys(data[0]).filter((key) => !isNaN(parseInt(key)));
 
-      let csvContent = "country,year,gdp" + "\n";
+      let csvContent = "country,year,gdp_per_capita" + "\n";
 
       data.forEach((item) => {
-        csvContent += `${item.country},${item.year},${item.gdp}`;
+        csvContent += `${item.country},${item.year},${item.gdp_per_capita}`;
         csvContent += "\n";
       });
 
@@ -819,7 +818,7 @@ const AfricaGDPComparison = () => {
                         fontSize={12}
                         fill="#555"
                       >
-                        {tick}
+                        {tick?.toLocaleString()}
                       </text>
                     </g>
                   ))}
@@ -860,16 +859,16 @@ const AfricaGDPComparison = () => {
                             : 0.3
                         }
                         cx={xScale(d.year)}
-                        cy={yScale(d.gdp)}
+                        cy={yScale(d.gdp_per_capita)}
                         r={screenSize === "small" ? 1.5 : 4}
                         fill={color(group.country)}
                         onMouseEnter={() =>
                           setTooltip({
                             x: xScale(d.year),
-                            y: yScale(d.gdp),
+                            y: yScale(d.gdp_per_capita),
                             country: d.country,
                             year: d.year,
-                            gdp: d.gdp,
+                            gdp_per_capita: d.gdp_per_capita,
                           })
                         }
                         onMouseLeave={() => setTooltip(null)}
@@ -900,7 +899,7 @@ const AfricaGDPComparison = () => {
                     fontSize={14}
                     fill="#333"
                   >
-                    GDP (Billions USD)
+                    GDP Per Capita (USD)
                   </text>
                 </g>
 
@@ -975,7 +974,9 @@ const AfricaGDPComparison = () => {
                         <strong>{tooltip.country}</strong>
                       </div>
                       <div>Year: {tooltip.year}</div>
-                      <div>GDP: {tooltip.gdp} billions (USD)</div>
+                      <div>
+                        gdp_per_capita: {tooltip.gdp_per_capita} billions (USD)
+                      </div>
                     </div>
                   </foreignObject>
                 )}
@@ -1145,7 +1146,7 @@ const AfricaGDPComparison = () => {
                         fontSize={12}
                         fill="#555"
                       >
-                        {tick}
+                        {tick?.toLocaleString()}
                       </text>
                     </g>
                   ))}
@@ -1186,16 +1187,16 @@ const AfricaGDPComparison = () => {
                             : 0.3
                         }
                         cx={xScale(d.year)}
-                        cy={yScale(d.gdp)}
+                        cy={yScale(d.gdp_per_capita)}
                         r={screenSize === "small" ? 1.5 : 4}
                         fill={color(group.country)}
                         onMouseEnter={() =>
                           setTooltip({
                             x: xScale(d.year),
-                            y: yScale(d.gdp),
+                            y: yScale(d.gdp_per_capita),
                             country: d.country,
                             year: d.year,
-                            gdp: d.gdp,
+                            gdp_per_capita: d.gdp_per_capita,
                           })
                         }
                         onMouseLeave={() => setTooltip(null)}
@@ -1226,7 +1227,7 @@ const AfricaGDPComparison = () => {
                     fontSize={14}
                     fill="#333"
                   >
-                    GDP (Billions USD)
+                    GDP Per Capita (USD)
                   </text>
                 </g>
 
@@ -1301,7 +1302,11 @@ const AfricaGDPComparison = () => {
                         <strong>{tooltip.country}</strong>
                       </div>
                       <div>Year: {tooltip.year}</div>
-                      <div>GDP: {tooltip.gdp} billions (USD)</div>
+                      <div>
+                        GDP Per Capita :{" "}
+                        {tooltip.gdp_per_capita?.toLocaleString()}
+                        (USD)
+                      </div>
                     </div>
                   </foreignObject>
                 )}
@@ -1314,4 +1319,4 @@ const AfricaGDPComparison = () => {
   );
 };
 
-export default AfricaGDPComparison;
+export default AfricaPerCapitagdp_per_capitaComparison;
